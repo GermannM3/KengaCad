@@ -53,11 +53,10 @@ jobs:
           if ($setup -and $env:KENGACAD_CODESIGN_PFX) {
             Write-Host "Verify Authenticode signature..."
             $sig = Get-AuthenticodeSignature $setup.FullName
-            if ($sig.Status -ne 'Valid') {
-              Write-Warning "Подпись Setup: $($sig.Status) — $($sig.StatusMessage)"
-            } else {
-              Write-Host "Setup подписан: $($sig.SignerCertificate.Subject)"
+            if ($sig.Status -eq 'NotSigned') {
+              throw "Setup.exe is not signed after build"
             }
+            Write-Host "Setup signed: $($sig.SignerCertificate.Subject) [$($sig.Status)]"
             $hash = Get-FileHash -Path $setup.FullName -Algorithm SHA256
             "$($hash.Hash)  $($setup.Name)" | Set-Content -Path "$out\KengaCAD_Professional_Setup.sha256" -Encoding ASCII
           }

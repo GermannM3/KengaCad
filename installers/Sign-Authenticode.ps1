@@ -41,7 +41,14 @@ foreach ($file in $Files) {
     Write-Host "Signing: $file"
     & $signExe sign /fd SHA256 /td SHA256 /tr $TimestampUrl /f $PfxPath /p $Password $file
     if ($LASTEXITCODE -ne 0) { throw "signtool sign failed ($LASTEXITCODE): $file" }
-    & $signExe verify /pa $file
-    if ($LASTEXITCODE -ne 0) { throw "signtool verify failed: $file" }
-    Write-Host "OK: $file"
+    & $signExe verify /pa $file 2>$null | Out-Null
+    $sig = Get-AuthenticodeSignature $file
+    if ($sig.Status -eq 'NotSigned') {
+        throw "File has no signature after sign: $file"
+    }
+    if ($sig.Status -eq 'Valid') {
+        Write-Host "OK (trusted): $file"
+    } else {
+        Write-Warning "Signed ($($sig.Status)): $file — self-signed or untrusted root; use CA cert for Smart App Control."
+    }
 }
