@@ -26,7 +26,7 @@ jobs:
       - run: dotnet build KengaCAD.Core/KengaCAD.Core.csproj -c Release --nologo
 
   build-android:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -36,9 +36,12 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
-      - run: dotnet workload install android maui-android --skip-manifest-update
-      - run: |
-          mkdir -p KengaCAD.Mobile/Resources/Raw/config/templates
-          cp KengaCAD/config/*.json KengaCAD.Mobile/Resources/Raw/config/
-          cp KengaCAD/config/templates/*.sbn KengaCAD.Mobile/Resources/Raw/config/templates/
-      - run: dotnet build KengaCAD.Mobile/KengaCAD.Mobile.csproj -f net9.0-android -c Release --nologo
+      - name: Install Android workload
+        shell: pwsh
+        run: dotnet workload install android maui-android --skip-manifest-update
+      - name: Sync mobile config
+        shell: pwsh
+        run: .\scripts\sync_mobile_config.ps1
+      - name: Build Android
+        shell: pwsh
+        run: dotnet build KengaCAD.Mobile/KengaCAD.Mobile.csproj -f net9.0-android -c Release --nologo

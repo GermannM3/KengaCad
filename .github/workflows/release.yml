@@ -94,7 +94,7 @@ jobs:
           if-no-files-found: error
 
   build-android:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -108,25 +108,26 @@ jobs:
           dotnet-version: '9.0.x'
 
       - name: Install Android workload
+        shell: pwsh
         run: dotnet workload install android maui-android --skip-manifest-update
 
       - name: Sync mobile config assets
-        run: |
-          mkdir -p KengaCAD.Mobile/Resources/Raw/config/templates
-          cp KengaCAD/config/*.json KengaCAD.Mobile/Resources/Raw/config/
-          cp KengaCAD/config/templates/*.sbn KengaCAD.Mobile/Resources/Raw/config/templates/
+        shell: pwsh
+        run: .\scripts\sync_mobile_config.ps1
 
       - name: Build APK
+        shell: pwsh
         run: |
-          VER="${GITHUB_REF_NAME#v}"
-          dotnet publish KengaCAD.Mobile/KengaCAD.Mobile.csproj \
-            -f net9.0-android -c Release \
-            -p:AndroidPackageFormat=apk \
-            -p:ApplicationDisplayVersion="$VER" \
+          $ver = "${{ github.ref_name }}".TrimStart('v')
+          dotnet publish KengaCAD.Mobile/KengaCAD.Mobile.csproj `
+            -f net9.0-android -c Release `
+            -p:AndroidPackageFormat=apk `
+            -p:ApplicationDisplayVersion=$ver `
             --nologo
-          mkdir -p installers/Output
-          APK=$(find KengaCAD.Mobile/bin/Release/net9.0-android -name "*.apk" | head -1)
-          cp "$APK" "installers/Output/KengaCAD_Professional_${VER}_android.apk"
+          New-Item -ItemType Directory -Force -Path installers/Output | Out-Null
+          $apk = Get-ChildItem -Recurse KengaCAD.Mobile/bin/Release/net9.0-android -Filter *.apk | Select-Object -First 1
+          if (-not $apk) { throw "APK not found" }
+          Copy-Item $apk.FullName "installers/Output/KengaCAD_Professional_${ver}_android.apk"
 
       - uses: actions/upload-artifact@v4
         with:
