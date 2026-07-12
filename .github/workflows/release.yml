@@ -1,0 +1,108 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y --no-progress
+
+      - name: Build Windows installer and ZIP
+        shell: pwsh
+        run: |
+          $ver = "${{ github.ref_name }}".TrimStart('v')
+          .\build_installer_professional.ps1
+          $out = "installers\Output"
+          if (Test-Path "$out\KengaCAD_Professional_Setup.exe") {
+            Move-Item -Force "$out\KengaCAD_Professional_Setup.exe" "$out\KengaCAD_Professional_${ver}_Setup.exe"
+          }
+          if (Test-Path "$out\KengaCAD_Professional_win-x64_self-contained.zip") {
+            Move-Item -Force "$out\KengaCAD_Professional_win-x64_self-contained.zip" "$out\KengaCAD_Professional_${ver}_win-x64.zip"
+          }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: |
+            installers/Output/KengaCAD_Professional_*_Setup.exe
+            installers/Output/KengaCAD_Professional_*_win-x64.zip
+            installers/Output/*.sha256
+          if-no-files-found: error
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Linux portable
+        run: |
+          VER="${GITHUB_REF_NAME#v}"
+          chmod +x scripts/stage_portable.sh
+          bash scripts/stage_portable.sh "$VER" linux
+
+      - name: Build AppImage
+        continue-on-error: true
+        run: |
+          VER="${GITHUB_REF_NAME#v}"
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq python3-venv python3-pip fuse libfuse2 \
+            libxkbcommon-x11-0 libxcb-cursor0 libgl1
+          chmod +x installers/linux/build_appimage.sh
+          KENGACAD_VERSION="$VER" ./installers/linux/build_appimage.sh || echo "AppImage skipped"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: |
+            installers/Output/KengaCAD_Professional_*_linux-x64_portable.tar.gz
+            installers/Output/KengaCAD_Professional_*_linux-x64.AppImage
+          if-no-files-found: warn
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build macOS portable
+        run: |
+          VER="${GITHUB_REF_NAME#v}"
+          chmod +x scripts/stage_portable.sh
+          bash scripts/stage_portable.sh "$VER" macos
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: installers/Output/KengaCAD_Professional_*_macos_portable.tar.gz
+          if-no-files-found: error
+
+  publish-release:
+    needs: [build-windows, build-linux, build-macos]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: List release files
+        run: find release-assets -type f -ls
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: release-assets/**

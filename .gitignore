@@ -1,0 +1,93 @@
+# Build
+[Dd]ebug/
+[Rr]elease/
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+[Pp]ublish/
+x64/
+[Dd]ist/
+*.user
+*.suo
+*.cache
+*.log
+*.pdb
+*.nupkg
+!**/assets/*.exe
+
+# Binaries (never commit built apps)
+*.dll
+*.exe
+*.so
+*.dylib
+!**/assets/**
+
+# .NET
+project.lock.json
+project.fragment.lock.json
+artifacts/
+*.rsuser
+KengaCAD/publish/
+KengaCAD/bin/
+KengaCAD/obj/
+
+# Installer and release output
+installers/Output/
+installers/Output/**/*
+*.AppImage
+*.dmg
+*.tar.gz
+*.zip
+!docs/**/*.zip
+
+# IDE
+.idea/
+.vs/
+.vscode/
+*.sln.docstates
+
+# OS
+Thumbs.db
+.DS_Store
+Desktop.ini
+
+# Python
+__pycache__/
+*.py[cod]
+.Python
+*.egg-info/
+.eggs/
+.venv/
+.venv-build/
+**/.venv/
+**/.venv-build/
+agent/.env
+.env
+.env.local
+.env.*
+
+# Secrets and local config
+*.pfx
+*.p12
+**/pki/
+**/credentials.json
+
+# Temp / dev tools output
+tools/bad_lines.txt
+*.tmp
+*.temp
+*.bak
+*~
+
+# Agent runtime
+agent/.env
+agent/__pycache__/
+
+# Legacy build artifacts
+_legacy/build/
+_legacy/dist/
+_legacy/.venv/
+
+# Large accidental copies
+KengaCAD_Portable*.zip
+KengaCAD_Setup.exe

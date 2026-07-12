@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kengacad"
+version = "1.0.0"
+description = "CAD-программа для настройки траекторий роботов нанесения мастики"
+readme = "README.md"
+authors = [{name = "KengaCAD Development Team", email = "info@kengacad.example.com"}]
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Manufacturing",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "PyQt6>=6.4.0",
+    "pyqtribbon>=0.3.0",
+    "websockets>=10.0",
+    "ezdxf>=0.17.0",
+    "numpy>=1.21.0",
+    "pyvista>=0.42.0",
+    "pyvistaqt>=0.11.0",
+    "trimesh>=4.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+    "black",
+    "flake8",
+    "mypy",
+]
+
+[project.urls]
+Homepage = "https://github.com/GermannM3/KengaCAD"
+Repository = "https://github.com/GermannM3/KengaCAD"
+
+[project.scripts]
+kengacad = "main:main"

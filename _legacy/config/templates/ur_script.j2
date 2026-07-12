@@ -1,0 +1,16 @@
+{{ comment }}
+# Program: {{ program_name }}
+# Points: {{ points | length }}
+# Speed: {{ speed_ms }} m/s, Accel: {{ accel }} m/s^2
+
+def {{ program_name }}():
+  # Set TCP (Tool Center Point)
+  set_tcp(p[0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+
+{% for pt in points %}
+  movel(p[{{ "%.6f" | format(pt.x / 1000.0) }}, {{ "%.6f" | format(pt.y / 1000.0) }}, {{ "%.6f" | format(pt.z / 1000.0) }}, {{ "%.4f" | format(pt.rx) }}, {{ "%.4f" | format(pt.ry) }}, {{ "%.4f" | format(pt.rz) }}], a={{ accel }}, v={{ speed_ms }})
+{% endfor %}
+
+  # Return to start
+  textmsg("{{ program_name }} completed")
+end

@@ -1,0 +1,57 @@
+{
+  "name": "Default 6-Axis Robot",
+  "description": "Стандартная конфигурация 6-осевого робота для нанесения мастики",
+  "joints": {
+    "joint_1": {
+      "type": "revolute",
+      "axis": [0, 0, 1],
+      "limits": [-180, 180],
+      "home_position": 0,
+      "description": "Основание (Base)"
+    },
+    "joint_2": {
+      "type": "revolute",
+      "axis": [0, 1, 0],
+      "limits": [-90, 90],
+      "home_position": 0,
+      "description": "Плечо (Shoulder)"
+    },
+    "joint_3": {
+      "type": "revolute",
+      "axis": [0, 1, 0],
+      "limits": [-90, 90],
+      "home_position": 0,
+      "description": "Локоть (Elbow)"
+    },
+    "joint_4": {
+      "type": "revolute",
+      "axis": [0, 0, 1],
+      "limits": [-180, 180],
+      "home_position": 0,
+      "description": "Запястье вращение (Wrist Rotation)"
+    },
+    "joint_5": {
+      "type": "revolute",
+      "axis": [0, 1, 0],
+      "limits": [-90, 90],
+      "home_position": 0,
+      "description": "Запястье наклон (Wrist Pitch)"
+    },
+    "joint_6": {
+      "type": "revolute",
+      "axis": [0, 0, 1],
+      "limits": [-180, 180],
+      "home_position": 0,
+      "description": "Инструмент (Tool)"
+    }
+  },
+  "end_effector": {
+    "type": "dispenser",
+    "tool_name": "Sealant Dispenser",
+    "capabilities": ["dispensing", "positioning"]
+  },
+  "kinematics": {
+    "type": "6-axis-articulated",
+    "DH_parameters": []
+  }
+}

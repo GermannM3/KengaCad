@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <?define ProductVersion = "1.0.0"?>
+  <?define ProductUpgradeCode = "12345678-1234-1234-1234-123456789012"?>
+
+  <Product Id="*" 
+           Name="KengaCAD" 
+           Language="1033" 
+           Version="$(var.ProductVersion)" 
+           Manufacturer="KengaCAD Development Team" 
+           UpgradeCode="$(var.ProductUpgradeCode)">
+    
+    <Package Id="*"
+             Keywords="Installer"
+             Description="KengaCAD Installer"
+             Comments="CAD-программа для настройки траекторий роботов"
+             Manufacturer="KengaCAD Development Team"
+             InstallerVersion="500"
+             Languages="1033"
+             Compressed="yes"
+             SummaryCodepage="1251"
+             InstallScope="perMachine" />
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <!-- Иконка продукта -->
+    <Icon Id="ProductIcon" SourceFile="assets\logo.png" />
+    <Property Id="ARPPRODUCTICON" Value="ProductIcon" />
+
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+    <UIRef Id="WixUI_InstallDir" />
+    <UIRef Id="WixUI_ErrorProgressText" />
+
+    <Feature Id="ProductFeature" Title="KengaCAD" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+      <ComponentRef Id="ApplicationShortcut" />
+      <ComponentRef Id="ApplicationRegistryEntries" />
+    </Feature>
+  </Product>
+
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFiles64Folder">
+        <Directory Id="INSTALLFOLDER" Name="KengaCAD">
+          <Component Id="ApplicationRegistryEntries" Guid="12345678-1234-1234-1234-123456789012">
+            <RegistryValue Root="HKCU" Key="SOFTWARE\[Manufacturer]\[ProductName]" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+          </Component>
+        </Directory>
+      </Directory>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="KengaCAD" />
+      </Directory>
+    </Directory>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <!-- Компоненты будут добавлены автоматически через скрипт -->
+    </ComponentGroup>
+  </Fragment>
+
+  <Fragment>
+    <Component Id="ApplicationShortcut" Directory="ApplicationProgramsFolder" Guid="87654321-4321-4321-4321-210987654321">
+      <Shortcut Id="ApplicationStartMenuShortcut" 
+                Name="KengaCAD" 
+                Description="CAD-программа для настройки траекторий роботов" 
+                Target="[INSTALLFOLDER]KengaCAD.exe" 
+                WorkingDirectory="INSTALLFOLDER">
+        <Icon Id="ProductIcon" />
+      </Shortcut>
+      <RemoveFolder Id="CleanUpShortCut" Directory="ApplicationProgramsFolder" On="uninstall"/>
+      <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+    </Component>
+  </Fragment>
+</Wix>

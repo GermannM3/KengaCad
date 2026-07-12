@@ -1,0 +1,73 @@
+{
+  "app": {
+    "name": "KengaCAD",
+    "version": "2.1.0",
+    "description": "CAD-программа для настройки траекторий роботов нанесения мастики",
+    "product_name": "KengaCAD",
+    "package_name": "kengacad",
+    "publisher": "KengaCAD Team",
+    "maintainer_email": "info@kengacad.example.com",
+    "url": "https://github.com/GermannM3/KengaCAD",
+    "summary": "CAD software for robot trajectory setup"
+  },
+  "engine": {
+    "websocket_uri": "ws://127.0.0.1:7777/ws",
+    "auto_connect": true,
+    "connection_timeout": 10,
+    "reconnect_attempts": 3,
+    "auto_start": true,
+    "project_dir": "",
+    "scene_relative": "scenes/default.json"
+  },
+  "ui": {
+    "theme": "dark",
+    "language": "ru_RU",
+    "window_size": {
+      "width": 1400,
+      "height": 900
+    },
+    "recent_files": [],
+    "toolbar_style": "large_icons"
+  },
+  "robot": {
+    "default_config": "config/default_robot.json",
+    "supported_formats": [
+      ".gltf",
+      ".glb",
+      ".obj",
+      ".ipt",
+      ".iam"
+    ],
+    "notes": {
+      "ipt": "Inventor Part — kenga convert или экспорт в Inventor",
+      "iam": "Inventor Assembly — kenga convert или экспорт в Inventor"
+    },
+    "max_joints": 12
+  },
+  "trajectory": {
+    "default_color": [
+      255,
+      200,
+      80,
+      255
+    ],
+    "default_width": 2.0,
+    "max_points": 10000
+  },
+  "dispensing": {
+    "default_flow_rate": 1.0,
+    "default_radius": 0.02,
+    "default_color": [
+      255,
+      220,
+      120,
+      255
+    ]
+  },
+  "updates": {
+    "enabled": false,
+    "check_on_startup": false,
+    "check_url": "",
+    "notes": "При подключении GitHub Releases или своего сервера — укажите check_url и enabled: true"
+  }
+}

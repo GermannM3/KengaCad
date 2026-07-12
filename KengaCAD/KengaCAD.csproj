@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>assets\logo.ico</ApplicationIcon>
+    <AssemblyName>KengaCAD</AssemblyName>
+    <RootNamespace>KengaCAD</RootNamespace>
+    <Version>2.1.0</Version>
+    <AssemblyVersion>2.1.0.0</AssemblyVersion>
+    <FileVersion>2.1.0.0</FileVersion>
+    <InformationalVersion>2.1.0</InformationalVersion>
+    <Authors>KengaCAD Team</Authors>
+    <Company>KengaCAD</Company>
+    <Product>KengaCAD Professional</Product>
+    <Description>Профессиональная CAD/CAM система для роботов</Description>
+    <Copyright>Copyright © 2026 KengaCAD Team</Copyright>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="netDxf" Version="2023.11.10" />
+    <PackageReference Include="OPCFoundation.NetStandard.Opc.Ua.Client" Version="1.5.374.158" />
+    <PackageReference Include="Scriban" Version="5.12.0" />
+    <PackageReference Include="SharpGLTF.Toolkit" Version="1.0.3" />
+    <PackageReference Include="SkiaSharp" Version="2.88.7" />
+    <PackageReference Include="SkiaSharp.Views.WPF" Version="2.88.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="assets\logo.ico" />
+    <Resource Include="assets\logo.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="config\settings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="config\robots.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="config\postprocessors.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="config\templates\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

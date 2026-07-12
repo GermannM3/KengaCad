@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=KengaCAD
+Comment=CAD-программа для настройки траекторий роботов
+Exec=/usr/bin/kengacad
+Icon=kengacad
+Categories=Graphics;
+Terminal=false

@@ -1,0 +1,15 @@
+DEF {{ program_name }}()
+  {{ comment }}
+  ; LIN - linear motion in Cartesian space
+  ; Points: {{ points | length }}
+  $VEL.CP = {{ speed_mms / 1000.0 }}
+  {{ velocity_var }} = {{ speed_mms / 1000.0 }}
+  $TOOL = TOOL_DATA[1]
+  $BASE = BASE_DATA[0]
+
+{% for pt in points %}
+  {{ motion_type }} {X {{ "%.3f" | format(pt.x) }}, Y {{ "%.3f" | format(pt.y) }}, Z {{ "%.3f" | format(pt.z) }}, A {{ "%.3f" | format(pt.rz) }}, B {{ "%.3f" | format(pt.ry) }}, C {{ "%.3f" | format(pt.rx) }}} C_DIS
+{% endfor %}
+
+  ; End trajectory
+END

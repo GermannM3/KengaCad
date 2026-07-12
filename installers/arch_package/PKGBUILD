@@ -1,0 +1,59 @@
+# PKGBUILD для KengaCAD
+# Maintainer: KengaCAD Team <info@kengacad.example.com>
+
+pkgname=kengacad
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="CAD-программа для настройки траекторий роботов"
+arch=('x86_64')
+url="https://github.com/GermannM3/KengaCAD"
+license=('MIT')
+depends=('python' 'python-pyqt6' 'python-websockets' 'python-ezdxf' 'python-numpy')
+makedepends=('python-setuptools')
+source=("kengacad-$pkgver.tar.gz::$url/archive/v$pkgver.tar.gz")
+sha256sums=('SKIP')  # Замените на реальный хеш после подготовки архива
+
+prepare() {
+    cd "$srcdir/KengaCAD-$pkgver"
+    # Подготовка исходников, если нужно
+}
+
+build() {
+    cd "$srcdir/KengaCAD-$pkgver"
+    # Создание исполняемого файла для Linux
+    python -m PyInstaller --onefile --windowed --name KengaCAD main.py
+}
+
+package() {
+    cd "$srcdir/KengaCAD-$pkgver"
+    
+    # Установка исполняемых файлов
+    install -dm755 "$pkgdir/usr/bin"
+    install -Dm755 "dist/KengaCAD" "$pkgdir/usr/bin/kengacad"
+    
+    # Установка файлов приложения
+    install -dm755 "$pkgdir/opt/kengacad"
+    cp -r ui/ engine/ robot/ cad/ config/ examples/ main.py kengacad_app.py "$pkgdir/opt/kengacad/"
+    
+    # Установка desktop файла
+    install -dm755 "$pkgdir/usr/share/applications"
+    cat > "$pkgdir/usr/share/applications/kengacad.desktop" << EOF
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=KengaCAD
+Comment=CAD-программа для настройки траекторий роботов
+Exec=/usr/bin/kengacad
+Icon=kengacad
+Categories=Graphics;Engineering;
+Terminal=false
+StartupNotify=true
+EOF
+    
+    # Установка иконки
+    install -dm755 "$pkgdir/usr/share/pixmaps"
+    # Если есть иконка, скопируйте её:
+    # cp assets/logo.png "$pkgdir/usr/share/pixmaps/kengacad.png"
+}
+
+# vim:set ts=2 sw=2 et:

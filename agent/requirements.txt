@@ -1,0 +1,4 @@
+# KengaCAD Agent — управление приложением и нейросеть
+pywinauto>=0.6.8
+requests>=2.28.0
+python-dotenv>=1.0.0

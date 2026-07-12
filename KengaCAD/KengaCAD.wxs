@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" 
+           Name="KengaCAD Professional v2.0.0" 
+           Language="1049" 
+           Version="2.0.0.0" 
+           Manufacturer="KengaCAD Team" 
+           UpgradeCode="A7B5C3D1-9E8F-4A2B-B6C7-D8E9F0A1B2C3">
+    
+    <Package InstallerVersion="500" 
+             Compressed="yes" 
+             InstallScope="perMachine"
+             Description="KengaCAD Professional - CAD/CAM система для роботов"
+             Manufacturer="KengaCAD Team"/>
+    
+    <MajorUpgrade DowngradeErrorMessage="Более новая версия уже установлена."/>
+    <MediaTemplate EmbedCab="yes"/>
+    
+    <!-- Лицензия (обязательно для диалога принятия лицензии) -->
+    <WixVariable Id="WixUILicenseRtf" Value="LICENSE.rtf"/>
+    
+    <Icon Id="KengaCAD.ico" SourceFile="$(var.PublishDir)\assets\logo.ico"/>
+    
+    <!-- Путь к собранному приложению задаётся при сборке: candle -dPublishDir=... -->
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER"/>
+    <UIRef Id="WixUI_InstallDir"/>
+    <UIRef Id="WixUI_ErrorProgressText"/>
+    
+    <Feature Id="ProductFeature" Title="KengaCAD Professional" Level="1">
+      <ComponentGroupRef Id="ProductComponents"/>
+      <ComponentGroupRef Id="Resources"/>
+      <ComponentRef Id="ApplicationShortcut"/>
+    </Feature>
+    
+    <!-- Диалог лицензии -->
+    <UI>
+      <Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="LicenseAgreementDlg" Order="2">1</Publish>
+      <Publish Dialog="LicenseAgreementDlg" Control="Back" Event="NewDialog" Value="WelcomeDlg">1</Publish>
+      <Publish Dialog="LicenseAgreementDlg" Control="Next" Event="NewDialog" Value="InstallDirDlg" Order="2">LicenseAccepted = "1"</Publish>
+    </UI>
+  </Product>
+
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="INSTALLFOLDER" Name="KengaCAD Professional"/>
+      </Directory>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="KengaCAD Professional"/>
+      </Directory>
+      <Directory Id="DesktopFolder" Name="Desktop"/>
+    </Directory>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <Component Id="MainExecutable" Guid="*">
+        <File Id="KengaCAD.exe" Source="$(var.PublishDir)\KengaCAD.exe" KeyPath="yes">
+          <Shortcut Id="ApplicationShortcut" 
+                    Directory="ApplicationProgramsFolder"
+                    Name="KengaCAD Professional"
+                    Description="Запуск KengaCAD Professional"
+                    Icon="KengaCAD.ico"/>
+          <Shortcut Id="DesktopShortcut" 
+                    Directory="DesktopFolder"
+                    Name="KengaCAD Professional"
+                    Description="Запуск KengaCAD Professional"
+                    Icon="KengaCAD.ico"/>
+        </File>
+        <RemoveFolder Id="RemoveInstallDir" Directory="INSTALLFOLDER"/>
+        <RemoveFolder Id="RemoveProgramMenu" Directory="ApplicationProgramsFolder"/>
+        <RemoveFolder Id="RemoveDesktop" Directory="DesktopFolder"/>
+        <RegistryValue Root="HKCU" 
+                       Key="Software\KengaCAD\Professional" 
+                       Name="installed" 
+                       Type="integer" 
+                       Value="1"/>
+      </Component>
+      
+      <Component Id="Cleanup" Guid="*">
+        <RemoveFile Id="RemoveExe" Directory="INSTALLFOLDER" Name="KengaCAD.exe" On="uninstall"/>
+        <RemoveFolder Id="CleanupInstallDir" Directory="INSTALLFOLDER" On="uninstall"/>
+        <RegistryValue Root="HKCU" 
+                       Key="Software\KengaCAD\Professional" 
+                       Name="cleanup" 
+                       Type="integer" 
+                       Value="1" 
+                       KeyPath="yes"/>
+      </Component>
+    </ComponentGroup>
+    
+    <ComponentGroup Id="Resources" Directory="INSTALLFOLDER">
+      <Component Id="ConfigFiles" Guid="*">
+        <File Id="SettingsJson" Source="$(var.PublishDir)\config\settings.json"/>
+        <File Id="RobotsJson" Source="$(var.PublishDir)\config\robots.json"/>
+        <File Id="PostprocessorsJson" Source="$(var.PublishDir)\config\postprocessors.json"/>
+      </Component>
+      
+      <Component Id="Assets" Guid="*">
+        <File Id="LogoIco" Source="$(var.PublishDir)\assets\logo.ico"/>
+        <File Id="LogoPng" Source="$(var.PublishDir)\assets\logo.png"/>
+        <File Id="RobotGlb" Source="$(var.PublishDir)\assets\robot.glb"/>
+      </Component>
+    </ComponentGroup>
+    
+    <Component Id="ApplicationShortcut" Directory="ApplicationProgramsFolder">
+      <Shortcut Id="UninstallShortcut"
+                Name="Удалить KengaCAD Professional"
+                Description="Удалить KengaCAD Professional"
+                Target="[System64Folder]msiexec.exe"
+                Arguments="/x [ProductCode]"/>
+    </Component>
+  </Fragment>
+</Wix>
