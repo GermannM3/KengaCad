@@ -108,7 +108,7 @@ jobs:
           dotnet-version: '9.0.x'
 
       - name: Install Android workload
-        run: dotnet workload install android maui --skip-manifest-update
+        run: dotnet workload install android maui-android --skip-manifest-update
 
       - name: Sync mobile config assets
         run: |

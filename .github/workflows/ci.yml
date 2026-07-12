@@ -36,7 +36,7 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
-      - run: dotnet workload install android maui --skip-manifest-update
+      - run: dotnet workload install android maui-android --skip-manifest-update
       - run: |
           mkdir -p KengaCAD.Mobile/Resources/Raw/config/templates
           cp KengaCAD/config/*.json KengaCAD.Mobile/Resources/Raw/config/
