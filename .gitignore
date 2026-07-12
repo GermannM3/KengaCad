@@ -79,14 +79,21 @@ tools/bad_lines.txt
 *.bak
 *~
 
+# AI session notes (keep README.md and docs/)
+**/AUDIT*.md
+**/ROADMAP*.md
+**/SESSION_*.md
+**/*_audit.md
+
 # Agent runtime
 agent/.env
 agent/__pycache__/
 
-# Legacy build artifacts
+# Legacy PyQt client (Linux/macOS portable). Dev notes: ../docs/
 _legacy/build/
 _legacy/dist/
 _legacy/.venv/
+_legacy/docs/
 
 # Large accidental copies
 KengaCAD_Portable*.zip

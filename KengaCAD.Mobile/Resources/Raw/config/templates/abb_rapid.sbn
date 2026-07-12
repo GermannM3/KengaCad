@@ -1,0 +1,15 @@
+MODULE {{ module_name }}
+  {{ comment }}
+  ! Points: {{ points.size }}
+  ! Speed: {{ speed_mms }} mm/s
+
+  PERS tooldata {{ tool_name }} := [TRUE,[[0,0,0],[1,0,0,0]],[0.001,[0,0,0.001],[1,0,0,0],0,0,0]];
+
+  PROC {{ proc_name }}()
+    ConfJ \Off;
+    ConfL \Off;
+{{ for pt in points }}
+    MoveL [[{{ pt.x | math.format "F3" }},{{ pt.y | math.format "F3" }},{{ pt.z | math.format "F3" }}],[{{ pt.q1 | math.format "F6" }},{{ pt.q2 | math.format "F6" }},{{ pt.q3 | math.format "F6" }},{{ pt.q4 | math.format "F6" }}],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]], v{{ speed_mms | math.round }}, fine, {{ tool_name }};
+{{ end }}
+  ENDPROC
+ENDMODULE

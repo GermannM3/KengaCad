@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KengaCAD.Mobile.MainPage"
+             Title="KengaCAD"
+             BackgroundColor="#1E1E1E">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+
+            <Label Text="KengaCAD Mobile" FontSize="22" TextColor="White" />
+            <Label Text="Jog, точки программы, экспорт KRL/RAPID" FontSize="13" TextColor="#AAAAAA" />
+
+            <Label Text="Робот" TextColor="#CCCCCC" />
+            <Picker x:Name="RobotPicker" Title="Выберите робота" TextColor="White" SelectedIndexChanged="OnRobotChanged" />
+
+            <Label x:Name="TcpLabel" Text="TCP: —" TextColor="#00FF88" FontFamily="Consolas" />
+
+            <Label Text="Оси (градусы)" TextColor="#CCCCCC" Margin="0,8,0,0" />
+            <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="6">
+                <Label Grid.Row="0" Grid.Column="0" Text="J1" TextColor="White" VerticalOptions="Center" />
+                <Slider Grid.Row="0" Grid.Column="1" x:Name="J1" Minimum="-180" Maximum="180" ValueChanged="OnJointChanged" />
+                <Label Grid.Row="1" Grid.Column="0" Text="J2" TextColor="White" VerticalOptions="Center" />
+                <Slider Grid.Row="1" Grid.Column="1" x:Name="J2" Minimum="-180" Maximum="180" ValueChanged="OnJointChanged" />
+                <Label Grid.Row="2" Grid.Column="0" Text="J3" TextColor="White" VerticalOptions="Center" />
+                <Slider Grid.Row="2" Grid.Column="1" x:Name="J3" Minimum="-180" Maximum="180" ValueChanged="OnJointChanged" />
+                <Label Grid.Row="3" Grid.Column="0" Text="J4" TextColor="White" VerticalOptions="Center" />
+                <Slider Grid.Row="3" Grid.Column="1" x:Name="J4" Minimum="-180" Maximum="180" ValueChanged="OnJointChanged" />
+                <Label Grid.Row="4" Grid.Column="0" Text="J5" TextColor="White" VerticalOptions="Center" />
+                <Slider Grid.Row="4" Grid.Column="1" x:Name="J5" Minimum="-180" Maximum="180" ValueChanged="OnJointChanged" />
+                <Label Grid.Row="5" Grid.Column="0" Text="J6" TextColor="White" VerticalOptions="Center" />
+                <Slider Grid.Row="5" Grid.Column="1" x:Name="J6" Minimum="-180" Maximum="180" ValueChanged="OnJointChanged" />
+            </Grid>
+
+            <HorizontalStackLayout Spacing="8">
+                <Button Text="Сброс осей" Clicked="OnZeroJoints" />
+                <Button Text="+ Точка TCP" Clicked="OnAddWaypoint" />
+            </HorizontalStackLayout>
+
+            <Label Text="Точки программы" TextColor="#CCCCCC" />
+            <CollectionView x:Name="WaypointsList" HeightRequest="160">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Label Text="{Binding Display}" TextColor="#DDDDDD" FontSize="13" Padding="4" />
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <HorizontalStackLayout Spacing="8">
+                <Button Text="KRL" Clicked="OnExportKrl" />
+                <Button Text="RAPID" Clicked="OnExportRapid" />
+                <Button Text="G-code" Clicked="OnExportGcode" />
+            </HorizontalStackLayout>
+
+            <Label x:Name="StatusLabel" Text="" TextColor="#888888" FontSize="12" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

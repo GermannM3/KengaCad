@@ -1,0 +1,14 @@
+{{ comment }}
+# Program: {{ program_name }}
+# Points: {{ points.size }}
+# Speed: {{ speed_ms }} m/s, Accel: {{ accel }} m/s^2
+
+def {{ program_name }}():
+  set_tcp(p[0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+
+{{ for pt in points }}
+  movel(p[{{ pt.x / 1000.0 | math.format "F6" }}, {{ pt.y / 1000.0 | math.format "F6" }}, {{ pt.z / 1000.0 | math.format "F6" }}, {{ pt.rx | math.format "F4" }}, {{ pt.ry | math.format "F4" }}, {{ pt.rz | math.format "F4" }}], a={{ accel }}, v={{ speed_ms }})
+{{ end }}
+
+  textmsg("{{ program_name }} completed")
+end

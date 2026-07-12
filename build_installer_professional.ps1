@@ -93,7 +93,11 @@ if (Test-Path $Iscc) {
             Write-Host "[3/3] Done."
             Write-Host "      Installer: $setupExe ($setupMb MB compressed; ~$mb MB on disk after install)"
             Write-Host "      SHA256:    $hashPath"
-            Write-Host "      Unsigned builds are blocked by Smart App Control: see docs\WINDOWS_TRUST_AND_SIGNING.md and installers\sign_installer.ps1"
+            Write-Host "      Unsigned builds are blocked by Smart App Control: see docs\WINDOWS_TRUST_AND_SIGNING.md"
+            if ($env:KENGACAD_CODESIGN_PFX -and (Test-Path $env:KENGACAD_CODESIGN_PFX)) {
+                Write-Host "[3b] Code signing..."
+                & (Join-Path $Root "installers\sign_installer.ps1")
+            }
         } else { Write-Host "ERROR: Installer build failed."; exit 1 }
     } finally { Pop-Location }
 } else {

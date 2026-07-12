@@ -11,8 +11,8 @@
 #   .\installers\sign_installer.ps1
 
 $ErrorActionPreference = "Stop"
-$setup = Join-Path $PSScriptRoot "Output\KengaCAD_Professional_Setup.exe"
-if (-not (Test-Path $setup)) { throw "Не найден: $setup — сначала build_installer_professional.ps1" }
+$setup = Get-ChildItem (Join-Path $PSScriptRoot "Output") -Filter "KengaCAD_Professional*_Setup.exe" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+if (-not $setup) { throw "Не найден Setup.exe в Output — сначала build_installer_professional.ps1" }
 
 function Find-SignTool {
     $cmd = Get-Command signtool.exe -ErrorAction SilentlyContinue
@@ -37,7 +37,7 @@ if (-not $pfx -or -not (Test-Path $pfx)) { throw "Задайте KENGACAD_CODESI
 $plainPass = $env:KENGACAD_CODESIGN_PASS
 if (-not $plainPass) { $plainPass = Read-Host "Пароль PFX" }
 
-& $signExe sign /fd SHA256 /td SHA256 /tr "http://timestamp.digicert.com" /f $pfx /p $plainPass $setup
+& $signExe sign /fd SHA256 /td SHA256 /tr "http://timestamp.digicert.com" /f $pfx /p $plainPass $setup.FullName
 if ($LASTEXITCODE -ne 0) { throw "signtool sign завершился с кодом $LASTEXITCODE" }
-Write-Host "Подписано: $setup"
-& $signExe verify /pa $setup
+Write-Host "Подписано: $($setup.FullName)"
+& $signExe verify /pa $setup.FullName

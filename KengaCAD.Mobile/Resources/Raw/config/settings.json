@@ -1,0 +1,17 @@
+{
+  "app": {
+    "name": "KengaCAD",
+    "version": "2.1.0",
+    "description": "Профессиональная CAD/CAM система для роботов",
+    "product_name": "KengaCAD Professional"
+  },
+  "ui": {
+    "theme": "dark",
+    "language": "ru_RU"
+  },
+  "cad": {
+    "oda_converter_path": "",
+    "freecad_path": "C:\\Program Files\\FreeCAD 0.21\\bin\\FreeCADCmd.exe",
+    "note": "Укажите путь к ODAFileConverter.exe для DWG и FreeCADCmd.exe для STEP/IGES"
+  }
+}

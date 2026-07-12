@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="KengaCAD.Core/KengaCAD.Core.csproj" />
+  <Project Path="KengaCAD.Mobile/KengaCAD.Mobile.csproj" />
+  <Project Path="KengaCAD/KengaCAD.csproj" />
+</Solution>

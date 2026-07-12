@@ -8,11 +8,11 @@
 
 [Setup]
 AppName=KengaCAD Professional
-AppVersion=2.1.0
+AppVersion=2.2.0
 AppPublisher=KengaCAD Team
-AppPublisherURL=https://github.com/GermannM3/KengaCAD
-AppSupportURL=https://github.com/GermannM3/KengaCAD
-AppUpdatesURL=https://github.com/GermannM3/KengaCAD
+AppPublisherURL=https://github.com/GermannM3/KengaCad
+AppSupportURL=https://github.com/GermannM3/KengaCad
+AppUpdatesURL=https://github.com/GermannM3/KengaCad/releases
 DefaultDirName={autopf}\KengaCAD Professional
 DefaultGroupName=KengaCAD Professional
 OutputDir=Output

@@ -1,0 +1,21 @@
+/JOB
+//NAME {{ job_name }}
+//POS
+///NPOS {{ points.size }},0,0,0,0,0,0,0
+///TOOL 0
+///POSTYPE PULSE
+///PULSE
+{{ for pt in points }}
+C{{ for.index0 | string.format "D5" }}={{ pt.x | math.format "F3" }},{{ pt.y | math.format "F3" }},{{ pt.z | math.format "F3" }},{{ pt.rx | math.format "F3" }},{{ pt.ry | math.format "F3" }},{{ pt.rz | math.format "F3" }}
+{{ end }}
+//INST
+///DATE {{ date }}
+///ATTR SC,RW
+///GROUP1 RB1
+///COMM {{ comment }}
+NOP
+{{ for pt in points }}
+{{ motion_type }} C{{ for.index0 | string.format "D5" }} V={{ speed_mms | math.format "F1" }}
+{{ end }}
+END
+/END

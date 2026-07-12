@@ -304,11 +304,11 @@ namespace KengaCAD
         private void InitializeIoSignals()
         {
             _ioSignals.Clear();
-            _ioSignals.Add(new IoSignal { Name = "DO1", Type = "DO", Description = "Gripper open", OpcNodeId = "ns=2;s=DO1" });
-            _ioSignals.Add(new IoSignal { Name = "DO2", Type = "DO", Description = "Gripper close", OpcNodeId = "ns=2;s=DO2" });
-            _ioSignals.Add(new IoSignal { Name = "DO3", Type = "DO", Description = "Weld start", OpcNodeId = "ns=2;s=DO3" });
-            _ioSignals.Add(new IoSignal { Name = "DI1", Type = "DI", Description = "Part present", OpcNodeId = "ns=2;s=DI1" });
-            _ioSignals.Add(new IoSignal { Name = "DI2", Type = "DI", Description = "Safety OK", OpcNodeId = "ns=2;s=DI2" });
+            _ioSignals.Add(new IoSignal { Name = "DO1", Type = "DO", Description = "Захват: открыть", OpcNodeId = "ns=2;s=DO1" });
+            _ioSignals.Add(new IoSignal { Name = "DO2", Type = "DO", Description = "Захват: закрыть", OpcNodeId = "ns=2;s=DO2" });
+            _ioSignals.Add(new IoSignal { Name = "DO3", Type = "DO", Description = "Старт сварки", OpcNodeId = "ns=2;s=DO3" });
+            _ioSignals.Add(new IoSignal { Name = "DI1", Type = "DI", Description = "Деталь на месте", OpcNodeId = "ns=2;s=DI1" });
+            _ioSignals.Add(new IoSignal { Name = "DI2", Type = "DI", Description = "Безопасность OK", OpcNodeId = "ns=2;s=DI2" });
             IoSignalsGrid.ItemsSource = _ioSignals;
         }
 
@@ -1029,7 +1029,7 @@ namespace KengaCAD
                     }
                     else
                     {
-                        StatusText.Text = $"Импорт {format}: установите FreeCAD и укажите freecad_path в config/settings.json";
+                        StatusText.Text = $"Импорт {format}: {CadImportHints.StepHint}";
                         AppendOutput(StatusText.Text);
                         return;
                     }
@@ -3353,40 +3353,6 @@ namespace KengaCAD
                 }
             }
         }
-    }
-
-    public class ProgramWaypoint
-    {
-        public int Index { get; set; }
-        public double X { get; set; }
-        public double Y { get; set; }
-        public double Z { get; set; }
-        public double Rx { get; set; }
-        public double Ry { get; set; }
-        public double Rz { get; set; }
-        public double Speed { get; set; } = 120;
-        public double Accel { get; set; } = 300;
-    }
-
-    public class ProgramFileDto
-    {
-        public string Robot { get; set; } = "";
-        public string Tool { get; set; } = "TOOL0";
-        public string Base { get; set; } = "BASE0";
-        public List<ProgramWaypoint> Waypoints { get; set; } = new();
-        public List<ProgramOperation> Operations { get; set; } = new();
-    }
-
-    public class ProgramOperation
-    {
-        public int Index { get; set; }
-        public string Type { get; set; } = "MoveL";
-        public int WaypointIndex { get; set; } = 1;
-        public double Speed { get; set; } = 120;
-        public double Accel { get; set; } = 300;
-        public double WaitMs { get; set; } = 500;
-        public string IoChannel { get; set; } = "DO1";
-        public bool IoValue { get; set; }
     }
 
     public class ExecutionFrame
