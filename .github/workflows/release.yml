@@ -22,7 +22,6 @@ jobs:
         run: choco install innosetup -y --no-progress
 
       - name: Decode signing certificate
-        if: ${{ secrets.KENGACAD_CODESIGN_PFX_BASE64 != '' }}
         shell: pwsh
         env:
           KENGACAD_CODESIGN_PFX_BASE64: ${{ secrets.KENGACAD_CODESIGN_PFX_BASE64 }}
