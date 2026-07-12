@@ -1,7 +1,7 @@
 param(
     [string]$Version = "2.2.0"
 )
-$Root = $PSScriptRoot
+$Root = Split-Path $PSScriptRoot -Parent
 $dst = Join-Path $Root "KengaCAD.Mobile\Resources\Raw\config"
 $tpl = Join-Path $dst "templates"
 New-Item -ItemType Directory -Force -Path $tpl | Out-Null
