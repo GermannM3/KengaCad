@@ -52,3 +52,5 @@ foreach ($file in $Files) {
         Write-Warning "Signed ($($sig.Status)): $file — self-signed or untrusted root; use CA cert for Smart App Control."
     }
 }
+
+$global:LASTEXITCODE = 0
