@@ -1,43 +1,23 @@
-# Подписать уже собранный Setup.exe через signtool (Authenticode).
-# Требуется Windows SDK (signtool).
-#
-# Переменные среды:
-#   KENGACAD_CODESIGN_PFX   — полный путь к .pfx
-#   KENGACAD_CODESIGN_PASS  — пароль PFX (если не задан — интерактивный ввод)
-#
-# Пример:
-#   $env:KENGACAD_CODESIGN_PFX = "C:\certs\company.pfx"
-#   $env:KENGACAD_CODESIGN_PASS = "secret"
-#   .\installers\sign_installer.ps1
+# Sign Setup.exe (and optionally KengaCAD.exe in publish).
+param(
+    [switch]$SignPublishExe
+)
 
 $ErrorActionPreference = "Stop"
-$setup = Get-ChildItem (Join-Path $PSScriptRoot "Output") -Filter "KengaCAD_Professional*_Setup.exe" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-if (-not $setup) { throw "Не найден Setup.exe в Output — сначала build_installer_professional.ps1" }
+$Root = Split-Path $PSScriptRoot -Parent
+$signScript = Join-Path $PSScriptRoot "Sign-Authenticode.ps1"
 
-function Find-SignTool {
-    $cmd = Get-Command signtool.exe -ErrorAction SilentlyContinue
-    if ($cmd) { return $cmd.Source }
-    $roots = @("${env:ProgramFiles(x86)}\Windows Kits\10\bin", "${env:ProgramFiles}\Windows Kits\10\bin")
-    foreach ($root in $roots) {
-        if (-not (Test-Path $root)) { continue }
-        $found = Get-ChildItem -Path $root -Recurse -Filter "signtool.exe" -ErrorAction SilentlyContinue |
-            Where-Object { $_.FullName -match '\\x64\\' } |
-            Select-Object -First 1
-        if ($found) { return $found.FullName }
-    }
-    return $null
+$toSign = @()
+if ($SignPublishExe) {
+    $appExe = Join-Path $Root "KengaCAD\publish\KengaCAD.exe"
+    if (Test-Path $appExe) { $toSign += $appExe }
 }
 
-$signExe = Find-SignTool
-if (-not $signExe) { throw "signtool.exe не найден. Установите Windows SDK (Signing Tools for Desktop Apps)." }
+$setup = Get-ChildItem (Join-Path $PSScriptRoot "Output") -Filter "KengaCAD_Professional*_Setup.exe" |
+    Sort-Object LastWriteTime -Descending |
+    Select-Object -First 1
+if (-not $setup) { throw "Setup.exe not found in Output. Run build_installer_professional.ps1 first." }
+$toSign += $setup.FullName
 
-$pfx = $env:KENGACAD_CODESIGN_PFX
-if (-not $pfx -or -not (Test-Path $pfx)) { throw "Задайте KENGACAD_CODESIGN_PFX на существующий .pfx файл" }
-
-$plainPass = $env:KENGACAD_CODESIGN_PASS
-if (-not $plainPass) { $plainPass = Read-Host "Пароль PFX" }
-
-& $signExe sign /fd SHA256 /td SHA256 /tr "http://timestamp.digicert.com" /f $pfx /p $plainPass $setup.FullName
-if ($LASTEXITCODE -ne 0) { throw "signtool sign завершился с кодом $LASTEXITCODE" }
-Write-Host "Подписано: $($setup.FullName)"
-& $signExe verify /pa $setup.FullName
+& $signScript -Files $toSign
+Write-Host "Signed $($toSign.Count) file(s)."

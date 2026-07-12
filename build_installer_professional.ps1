@@ -65,6 +65,11 @@ try {
     $lines += "libSkiaSharp.dll (native): $skiLine"
     $lines | Set-Content -Path $manifestPath -Encoding UTF8
     Write-Host "      Manifest: $manifestPath"
+
+    if ($env:KENGACAD_CODESIGN_PFX -and (Test-Path $env:KENGACAD_CODESIGN_PFX)) {
+        Write-Host "[1b] Подпись KengaCAD.exe перед упаковкой..."
+        & (Join-Path $Root "installers\Sign-Authenticode.ps1") -Files $exe
+    }
 } finally { Pop-Location }
 
 if (-not $NoPortableZip) {

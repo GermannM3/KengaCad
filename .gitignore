@@ -69,6 +69,7 @@ agent/.env
 # Secrets and local config
 *.pfx
 *.p12
+installers/secrets/
 **/pki/
 **/credentials.json
 

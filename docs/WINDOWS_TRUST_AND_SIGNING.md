@@ -2,6 +2,52 @@
 
 *(По материалам документации .NET deploy и Inno Setup через Context7: для установщика Microsoft Authenticode и timestamp — стандартный путь; встроенные механизмы ISSigTool/Inno относятся к другой модели подписи и не заменяют SmartScreen для обычных пользователей.)*
 
+## Быстрая настройка (репозиторий + GitHub Actions)
+
+Из корня репозитория на Windows (нужен Windows SDK / signtool):
+
+```powershell
+# 1. Создать PFX (self-signed для CI; для пользователей — замените на сертификат УЦ)
+.\scripts\setup_codesign_cert.ps1
+# Запомните пароль из вывода
+
+# 2. Загрузить в GitHub Secrets
+.\scripts\publish_github_codesign_secrets.ps1 -Password "ВАШ_ПАРОЛЬ"
+
+# 3. Пересобрать релиз (тег)
+git tag -f v2.2.1
+git push origin v2.2.1 --force
+```
+
+Secrets в репозитории:
+
+| Secret | Содержимое |
+|--------|------------|
+| `KENGACAD_CODESIGN_PFX_BASE64` | Файл `.pfx` в base64 |
+| `KENGACAD_CODESIGN_PASS` | Пароль экспорта PFX |
+
+Локальная сборка с подписью:
+
+```powershell
+$env:KENGACAD_CODESIGN_PFX = "D:\KengaCAD\installers\secrets\kengacad_codesign.pfx"
+$env:KENGACAD_CODESIGN_PASS = "пароль"
+.\build_installer_professional.ps1
+```
+
+Подписываются `KengaCAD.exe` (до упаковки) и `Setup.exe`.
+
+### Self-signed vs коммерческий сертификат
+
+- **Self-signed** (скрипт выше): CI подписывает файлы, `signtool verify /pa` проходит на машине сборки. У конечных пользоват Windows **всё равно** может ругаться Smart App Control — нет цепочки до доверенного УЦ.
+- **OV/EV от УЦ** (DigiCert, Sectigo, GlobalSign): замените PFX в secrets на купленный сертификат, пароль — от экспорта. EV даёт лучшую репутацию с первого дня.
+
+Импорт готового PFX от УЦ:
+
+```powershell
+# положите company.pfx в installers\secrets\kengacad_codesign.pfx
+.\scripts\publish_github_codesign_secrets.ps1 -PfxPath "C:\certs\company.pfx" -Password "..."
+```
+
 ## Почему блокируют `KengaCAD_Professional_Setup.exe`
 
 **Интеллектуальное управление приложениями (Smart App Control)** и **SmartScreen** опираются на репутацию файла. У сборки без **Authenticode-подписи** издателя Windows часто **не может установить автора** — и показывает именно то окно, которое вы видите.

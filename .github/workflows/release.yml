@@ -36,6 +36,9 @@ jobs:
 
       - name: Build Windows installer and ZIP
         shell: pwsh
+        env:
+          KENGACAD_CODESIGN_PFX: ${{ env.KENGACAD_CODESIGN_PFX }}
+          KENGACAD_CODESIGN_PASS: ${{ secrets.KENGACAD_CODESIGN_PASS }}
         run: |
           $ver = "${{ github.ref_name }}".TrimStart('v')
           .\build_installer_professional.ps1
@@ -45,6 +48,18 @@ jobs:
           }
           if (Test-Path "$out\KengaCAD_Professional_win-x64_self-contained.zip") {
             Move-Item -Force "$out\KengaCAD_Professional_win-x64_self-contained.zip" "$out\KengaCAD_Professional_${ver}_win-x64.zip"
+          }
+          $setup = Get-ChildItem "$out\KengaCAD_Professional_${ver}_Setup.exe" -ErrorAction SilentlyContinue
+          if ($setup -and $env:KENGACAD_CODESIGN_PFX) {
+            Write-Host "Verify Authenticode signature..."
+            $sig = Get-AuthenticodeSignature $setup.FullName
+            if ($sig.Status -ne 'Valid') {
+              Write-Warning "Подпись Setup: $($sig.Status) — $($sig.StatusMessage)"
+            } else {
+              Write-Host "Setup подписан: $($sig.SignerCertificate.Subject)"
+            }
+            $hash = Get-FileHash -Path $setup.FullName -Algorithm SHA256
+            "$($hash.Hash)  $($setup.Name)" | Set-Content -Path "$out\KengaCAD_Professional_Setup.sha256" -Encoding ASCII
           }
 
       - uses: actions/upload-artifact@v4
