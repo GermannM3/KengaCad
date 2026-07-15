@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 
@@ -18,6 +19,10 @@ namespace KengaCAD
         private static bool ExportKukaKrlFallback(IReadOnlyList<TrajectoryPoint> points, string filePath,
             double speedMmS = 100, string? programName = null)
         {
+            var prev = CultureInfo.CurrentCulture;
+            CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+            try
+            {
             if (points == null || points.Count == 0) return false;
             programName ??= "KengaCAD_Trajectory";
             double vel = speedMmS / 1000.0;
@@ -40,6 +45,8 @@ namespace KengaCAD
                 return true;
             }
             catch { return false; }
+            }
+            finally { CultureInfo.CurrentCulture = prev; }
         }
 
         public static bool ExportAbbRapid(IReadOnlyList<TrajectoryPoint> points, string filePath,

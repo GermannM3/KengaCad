@@ -473,7 +473,7 @@
                                          ToolTip="Пароль FTP"/>
                             </Grid>
                             <TextBox x:Name="ShopRemoteDirTextBox" Margin="0,0,0,4"
-                                     Text="/" FontSize="10" Padding="4,2"
+                                     Text="/R1/Program" FontSize="10" Padding="4,2"
                                      Background="#161A1F" Foreground="#E6E6E6" BorderBrush="#3B414A"
                                      ToolTip="Каталог на контроллере (KUKA: /R1/Program …)"/>
                             <WrapPanel>

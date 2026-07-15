@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,10 @@ namespace KengaCAD;
 /// </summary>
 public static class ProgramExporter
 {
+    private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
+
+    private static string F(double v, string format = "F3") => v.ToString(format, Inv);
+
     public static bool Export(
         string brand,
         IReadOnlyList<ProgramWaypoint> waypoints,
@@ -70,15 +75,15 @@ public static class ProgramExporter
                     sb.AppendLine($"  $OUT[{ch}] = {val}");
                     break;
                 case "WAIT":
-                    sb.AppendLine($"  WAIT SEC {Math.Max(0.01, op.WaitMs / 1000.0):F3}");
+                    sb.AppendLine($"  WAIT SEC {F(Math.Max(0.01, op.WaitMs / 1000.0))}");
                     break;
                 case "MOVEJ":
                 {
                     var wp = FindWp(wps, op.WaypointIndex);
                     if (wp == null) break;
                     double vel = Math.Max(0.01, (op.Speed > 0 ? op.Speed : defSpeed) / 1000.0);
-                    sb.AppendLine($"  $VEL.CP = {vel:F3}");
-                    sb.AppendLine($"  PTP {{X {wp.X:F3}, Y {wp.Y:F3}, Z {wp.Z:F3}, A {wp.Rz:F3}, B {wp.Ry:F3}, C {wp.Rx:F3}}}");
+                    sb.AppendLine($"  $VEL.CP = {F(vel)}");
+                    sb.AppendLine($"  PTP {{X {F(wp.X)}, Y {F(wp.Y)}, Z {F(wp.Z)}, A {F(wp.Rz)}, B {F(wp.Ry)}, C {F(wp.Rx)}}}");
                     break;
                 }
                 default: // MoveL
@@ -86,8 +91,8 @@ public static class ProgramExporter
                     var wp = FindWp(wps, op.WaypointIndex);
                     if (wp == null) break;
                     double vel = Math.Max(0.01, (op.Speed > 0 ? op.Speed : defSpeed) / 1000.0);
-                    sb.AppendLine($"  $VEL.CP = {vel:F3}");
-                    sb.AppendLine($"  LIN {{X {wp.X:F3}, Y {wp.Y:F3}, Z {wp.Z:F3}, A {wp.Rz:F3}, B {wp.Ry:F3}, C {wp.Rx:F3}}} C_DIS");
+                    sb.AppendLine($"  $VEL.CP = {F(vel)}");
+                    sb.AppendLine($"  LIN {{X {F(wp.X)}, Y {F(wp.Y)}, Z {F(wp.Z)}, A {F(wp.Rz)}, B {F(wp.Ry)}, C {F(wp.Rx)}}} C_DIS");
                     break;
                 }
             }
@@ -115,7 +120,7 @@ public static class ProgramExporter
                     sb.AppendLine($"    SetDO do{ch}, {(op.IoValue ? 1 : 0)};");
                     break;
                 case "WAIT":
-                    sb.AppendLine($"    WaitTime {Math.Max(0.01, op.WaitMs / 1000.0):F3};");
+                    sb.AppendLine($"    WaitTime {F(Math.Max(0.01, op.WaitMs / 1000.0))};");
                     break;
                 case "MOVEJ":
                 {
@@ -123,7 +128,7 @@ public static class ProgramExporter
                     if (wp == null) break;
                     int v = (int)Math.Round(op.Speed > 0 ? op.Speed : defSpeed);
                     var q = TrajectoryPoint.FromXyz(wp.X, wp.Y, wp.Z, wp.Rx, wp.Ry, wp.Rz).Quaternion;
-                    sb.AppendLine($"    MoveJ [[{wp.X:F3},{wp.Y:F3},{wp.Z:F3}],[{q.Q1:F6},{q.Q2:F6},{q.Q3:F6},{q.Q4:F6}],[0,0,0,0],[9E9,9E9,9E9,9E9,9E9,9E9]], v{v}, fine, tool0;");
+                    sb.AppendLine($"    MoveJ [[{F(wp.X)},{F(wp.Y)},{F(wp.Z)}],[{F(q.Q1, "F6")},{F(q.Q2, "F6")},{F(q.Q3, "F6")},{F(q.Q4, "F6")}],[0,0,0,0],[9E9,9E9,9E9,9E9,9E9,9E9]], v{v}, fine, tool0;");
                     break;
                 }
                 default:
@@ -132,7 +137,7 @@ public static class ProgramExporter
                     if (wp == null) break;
                     int v = (int)Math.Round(op.Speed > 0 ? op.Speed : defSpeed);
                     var q = TrajectoryPoint.FromXyz(wp.X, wp.Y, wp.Z, wp.Rx, wp.Ry, wp.Rz).Quaternion;
-                    sb.AppendLine($"    MoveL [[{wp.X:F3},{wp.Y:F3},{wp.Z:F3}],[{q.Q1:F6},{q.Q2:F6},{q.Q3:F6},{q.Q4:F6}],[0,0,0,0],[9E9,9E9,9E9,9E9,9E9,9E9]], v{v}, fine, tool0;");
+                    sb.AppendLine($"    MoveL [[{F(wp.X)},{F(wp.Y)},{F(wp.Z)}],[{F(q.Q1, "F6")},{F(q.Q2, "F6")},{F(q.Q3, "F6")},{F(q.Q4, "F6")}],[0,0,0,0],[9E9,9E9,9E9,9E9,9E9,9E9]], v{v}, fine, tool0;");
                     break;
                 }
             }
@@ -165,7 +170,7 @@ public static class ProgramExporter
                     line++;
                     break;
                 case "WAIT":
-                    sb.AppendLine($"   {line}:  WAIT  {Math.Max(0.01, op.WaitMs / 1000.0):F2} sec ;");
+                    sb.AppendLine($"   {line}:  WAIT  {F(Math.Max(0.01, op.WaitMs / 1000.0), "F2")} sec ;");
                     line++;
                     break;
                 default:
@@ -175,7 +180,7 @@ public static class ProgramExporter
                     points.Add(wp);
                     double spd = op.Speed > 0 ? op.Speed : defSpeed;
                     string motion = op.Type.Equals("MoveJ", StringComparison.OrdinalIgnoreCase) ? "J" : "L";
-                    sb.AppendLine($"   {line}:{motion} P[{pnum}] {spd:F0}mm/sec FINE    ;");
+                    sb.AppendLine($"   {line}:{motion} P[{pnum}] {F(spd, "F0")}mm/sec FINE    ;");
                     line++;
                     pnum++;
                     break;
@@ -189,8 +194,8 @@ public static class ProgramExporter
             sb.AppendLine($"P[{i + 1}]{{");
             sb.AppendLine("  GP1:");
             sb.AppendLine("  UF : 0, UT : 1,");
-            sb.AppendLine($"  X = {wp.X:F3}  mm, Y = {wp.Y:F3}  mm, Z = {wp.Z:F3}  mm,");
-            sb.AppendLine($"  W = {wp.Rx:F3}  deg, P = {wp.Ry:F3}  deg, R = {wp.Rz:F3}  deg");
+            sb.AppendLine($"  X = {F(wp.X)}  mm, Y = {F(wp.Y)}  mm, Z = {F(wp.Z)}  mm,");
+            sb.AppendLine($"  W = {F(wp.Rx)}  deg, P = {F(wp.Ry)}  deg, R = {F(wp.Rz)}  deg");
             sb.AppendLine("};");
         }
         sb.AppendLine("/END");
@@ -212,16 +217,14 @@ public static class ProgramExporter
                     sb.AppendLine($"  set_digital_out({Math.Max(0, ch - 1)}, {(op.IoValue ? "True" : "False")})");
                     break;
                 case "WAIT":
-                    sb.AppendLine($"  sleep({Math.Max(0.01, op.WaitMs / 1000.0):F3})");
+                    sb.AppendLine($"  sleep({F(Math.Max(0.01, op.WaitMs / 1000.0))})");
                     break;
                 default:
                 {
                     var wp = FindWp(wps, op.WaypointIndex);
                     if (wp == null) break;
                     double s = Math.Max(0.01, (op.Speed > 0 ? op.Speed : defSpeed) / 1000.0);
-                    var q = TrajectoryPoint.FromXyz(wp.X, wp.Y, wp.Z, wp.Rx, wp.Ry, wp.Rz).Quaternion;
-                    // UR pose: xyz in meters + rx ry rz as rotation vector approx from RPY — keep xyz + zeros for simplicity of offline
-                    sb.AppendLine($"  movel(p[{wp.X / 1000.0:F5}, {wp.Y / 1000.0:F5}, {wp.Z / 1000.0:F5}, {wp.Rx * Math.PI / 180.0:F4}, {wp.Ry * Math.PI / 180.0:F4}, {wp.Rz * Math.PI / 180.0:F4}], a=1.2, v={s:F3})");
+                    sb.AppendLine($"  movel(p[{F(wp.X / 1000.0, "F5")}, {F(wp.Y / 1000.0, "F5")}, {F(wp.Z / 1000.0, "F5")}, {F(wp.Rx * Math.PI / 180.0, "F4")}, {F(wp.Ry * Math.PI / 180.0, "F4")}, {F(wp.Rz * Math.PI / 180.0, "F4")}], a=1.2, v={F(s)})");
                     break;
                 }
             }
