@@ -18,24 +18,47 @@ rsync -a \
 
 cat > "$STAGING/install.sh" << 'EOF'
 #!/bin/bash
+# KengaCAD portable — Astra Linux / Ред ОС / Ubuntu / Debian
 set -euo pipefail
 cd "$(dirname "$0")"
+
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "Нужен python3. Astra: sudo apt-get install -y python3 python3-venv python3-pip"
+  echo "Ред ОС:  sudo dnf install -y python3 python3-pip"
+  exit 1
+fi
+
 python3 -m venv .venv
+# shellcheck disable=SC1091
 source .venv/bin/activate
 pip install -q --upgrade pip
 pip install -q -r requirements.txt
-echo "Готово. Запуск: ./run.sh"
+echo ""
+echo "Готово для Linux (Astra / Ред ОС тоже)."
+echo "Запуск: ./run.sh"
+echo "В программе откройте док «Цех (Linux)» — IP робота, впрыск, FTP."
 EOF
 
 cat > "$STAGING/run.sh" << 'EOF'
 #!/bin/bash
 cd "$(dirname "$0")"
 if [[ ! -d .venv ]]; then
-  echo "Сначала выполните: chmod +x install.sh && ./install.sh"
+  echo "Сначала: chmod +x install.sh && ./install.sh"
   exit 1
 fi
+# shellcheck disable=SC1091
 source .venv/bin/activate
 exec python3 main.py "$@"
+EOF
+
+# Краткая памятка для заводского Linux
+cat > "$STAGING/ASTRA_REDOS.txt" << 'EOF'
+KengaCAD на Astra Linux / Ред ОС
+================================
+1) ./install.sh
+2) ./run.sh
+3) Док слева «Цех (Linux)»: IP контроллера → Проверить → Экспорт+ → Залить FTP
+4) Если Qt/pip ошибки — см. docs/LINUX.md в репозитории GitHub
 EOF
 
 chmod +x "$STAGING/install.sh" "$STAGING/run.sh"

@@ -1,7 +1,7 @@
 {
   "app": {
     "name": "KengaCAD",
-    "version": "2.1.0",
+    "version": "2.4.0",
     "description": "Профессиональная CAD/CAM система для роботов",
     "product_name": "KengaCAD Professional"
   },

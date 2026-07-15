@@ -34,6 +34,7 @@ from ui.workcell_dialogs import AddBoxDialog, AddConveyorDialog, AddFenceDialog,
 from ui.joint_status_panel import JointStatusPanel
 from ui.tcp_position_panel import TCPPositionPanel
 from ui.plc_panel import PLCPanel
+from ui.shop_panel import ShopFloorPanel
 from ui.gantt_panel import VirtualCommissioningPanel
 from cad.import_export import CADImportExport
 from cad.collision import check_collisions_local, check_collisions_mesh
@@ -474,6 +475,13 @@ class KengaCADMainWindow(QMainWindow):
         self.plc_dock = QDockWidget("PLC / Сигналы I/O", self)
         self.plc_dock.setWidget(self._plc_panel)
         self.addDockWidget(Qt.RightDockWidgetArea, self.plc_dock)
+
+        # Цех — Astra / Ред ОС / заводская LAN
+        self._shop_panel = ShopFloorPanel(self)
+        self._shop_panel.statusMessage.connect(lambda m: self.statusBar().showMessage(m, 8000))
+        self.shop_dock = QDockWidget("Цех (Linux)", self)
+        self.shop_dock.setWidget(self._shop_panel)
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.shop_dock)
 
         # Virtual Commissioning панель
         self._vc_panel = VirtualCommissioningPanel(self)

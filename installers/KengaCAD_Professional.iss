@@ -8,7 +8,7 @@
 
 [Setup]
 AppName=KengaCAD Professional
-AppVersion=2.3.1
+AppVersion=2.4.0
 AppPublisher=KengaCAD Team
 AppPublisherURL=https://github.com/GermannM3/KengaCad
 AppSupportURL=https://github.com/GermannM3/KengaCad

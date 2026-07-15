@@ -15,9 +15,9 @@ KengaCAD — программа для офлайн-программирован
 
 | Платформа | Версия | Что это |
 |-----------|--------|---------|
-| **Windows (WPF)** | основная | Полный CAD, 3D-симуляция, OPC UA, multi-robot |
-| **Linux / macOS** | portable | PyQt-клиент (`_legacy`), те же конфиги и постпроцессоры |
-| **Android (MAUI)** | companion | Jog, TCP, точки, экспорт KRL / RAPID / G-code |
+| **Linux Astra / Ред ОС** | factory | Portable PyQt + док **«Цех»**: IP, впрыск, FTP на шкаф |
+| **Windows (WPF)** | office / цех Win | Полный CAD, OPC UA, multi-robot, «Цех» |
+| **Android (MAUI)** | companion | Jog + FTP, не полный CAD |
 
 > **Скачать:** [github.com/GermannM3/KengaCad/releases](https://github.com/GermannM3/KengaCad/releases/latest)
 
@@ -34,22 +34,25 @@ KengaCAD — программа для офлайн-программирован
 | `KengaCAD_Professional_*_macos_portable.tar.gz` | macOS | PyQt-клиент |
 | `KengaCAD_Professional_*_android.apk` | Android | Jog + экспорт, не полный CAD |
 
-Актуальная версия: **v2.3.1**. Новый релиз — тег `v*` → GitHub Actions собирает все артефакты автоматически.
+Актуальная версия: **v2.4.0**. Новый релиз — тег `v*` → GitHub Actions собирает все артефакты автоматически.
 
 ---
 
-## С ноутбука в цехе (главный сценарий)
+## С ноутбука в цехе (Astra / Ред ОС / Windows)
 
-Не «магия», а обычная заводская схема:
+На заводе чаще **Linux**. Сценарий:
 
 1. Ноутбук в **той же сети**, что и шкаф робота.
-2. Слева в программе блок **«Цех»** → IP контроллера → **Проверить**.
-3. Точки TCP + кнопки **Впрыск ВКЛ/ВЫКЛ** (пушка герметика / сигнал на участке шва).
-4. **Экспорт+** → **Залить FTP** на робота.
+2. Блок **«Цех»** (Linux: док слева «Цех (Linux)»; Windows: панель слева) → IP → **Проверить**.
+3. Траектория + **Впрыск ВКЛ/ВЫКЛ**.
+4. **Экспорт+** → **Залить FTP**.
 
-Подробно простым языком: [`docs/SHOP_FLOOR.md`](docs/SHOP_FLOOR.md).
+- Отечественный Linux: [`docs/LINUX.md`](docs/LINUX.md)
+- Общий порядок: [`docs/SHOP_FLOOR.md`](docs/SHOP_FLOOR.md)
 
 ---
+
+## Windows — установка
 
 1. Скачай **`Setup.exe`** с [Releases](https://github.com/GermannM3/KengaCad/releases/latest).
 2. Запусти. SmartScreen на неподписанном exe — «Подробнее» → «Выполнить в любом случае», или возьми ZIP.
@@ -79,20 +82,24 @@ KengaCAD — программа для офлайн-программирован
 
 ## Linux и macOS
 
-Полноценный WPF-клиент только под Windows. На Linux и macOS — portable с PyQt из `_legacy`.
+Полноценный WPF — только Windows. На **Astra Linux / Ред ОС / Ubuntu** — portable из Releases.
 
-**Linux:**
+См. подробно: [`docs/LINUX.md`](docs/LINUX.md).
+
+**Linux (завод):**
 
 ```bash
-tar xzf KengaCAD_Professional_2.3.0_linux-x64_portable.tar.gz
+tar xzf KengaCAD_Professional_2.4.0_linux-x64_portable.tar.gz
 cd распакованная_папка
 chmod +x install.sh run.sh && ./install.sh && ./run.sh
 ```
 
+Откройте док **«Цех (Linux)»** — проверка IP, впрыск, FTP.
+
 **macOS:**
 
 ```bash
-tar xzf KengaCAD_Professional_2.3.0_macos_portable.tar.gz
+tar xzf KengaCAD_Professional_2.4.0_macos_portable.tar.gz
 chmod +x install.sh run.sh KengaCAD.command && ./install.sh && ./KengaCAD.command
 ```
 
