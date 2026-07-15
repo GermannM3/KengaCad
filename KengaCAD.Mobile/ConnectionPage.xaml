@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KengaCAD.Mobile.ConnectionPage"
+             Title="Связь"
+             BackgroundColor="#121212">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="10">
+
+            <Border Stroke="#333333" Padding="12" BackgroundColor="#1A1A1A">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="8" />
+                </Border.StrokeShape>
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Подключение к роботу" FontSize="18" FontAttributes="Bold" TextColor="White" />
+                    <Label Text="Телефон и контроллер в одной заводской Wi‑Fi/LAN. Без этого экспорт бесполезен на цехе."
+                           FontSize="12" TextColor="#999999" LineBreakMode="WordWrap" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Label Text="Пресет бренда" TextColor="#888888" FontSize="11" />
+            <Picker x:Name="BrandPicker" Title="Бренд" TextColor="White" TitleColor="#888888" SelectedIndexChanged="OnBrandChanged" />
+
+            <Label x:Name="HintLabel" Text="" TextColor="#666666" FontSize="12" LineBreakMode="WordWrap" />
+
+            <Label Text="IP контроллера" TextColor="#888888" FontSize="11" />
+            <Entry x:Name="HostEntry" Text="192.168.1.10" TextColor="White" BackgroundColor="#1A1A1A" Keyboard="Url" />
+
+            <Label Text="Порт" TextColor="#888888" FontSize="11" />
+            <Entry x:Name="PortEntry" Text="21" TextColor="White" BackgroundColor="#1A1A1A" Keyboard="Numeric" />
+
+            <Label Text="Протокол" TextColor="#888888" FontSize="11" />
+            <Picker x:Name="ProtocolPicker" Title="Протокол" TextColor="White" TitleColor="#888888" />
+
+            <Label Text="Логин / пароль (FTP)" TextColor="#888888" FontSize="11" />
+            <Entry x:Name="UserEntry" Text="anonymous" TextColor="White" BackgroundColor="#1A1A1A" />
+            <Entry x:Name="PassEntry" Text="" IsPassword="True" TextColor="White" BackgroundColor="#1A1A1A" Placeholder="пароль" PlaceholderColor="#555555" />
+
+            <Label Text="Каталог на контроллере" TextColor="#888888" FontSize="11" />
+            <Entry x:Name="RemoteDirEntry" Text="/" TextColor="White" BackgroundColor="#1A1A1A" />
+
+            <FlexLayout Wrap="Wrap">
+                <Button Text="Проверить порт" Clicked="OnProbe" Margin="0,0,8,8" BackgroundColor="#2A2A2A" TextColor="White" Padding="14,8" />
+                <Button Text="Сохранить профиль" Clicked="OnSave" Margin="0,0,8,8" BackgroundColor="#FF6600" TextColor="White" Padding="14,8" />
+            </FlexLayout>
+
+            <Label Text="UR DASHBOARD" TextColor="#888888" FontSize="11" Margin="0,8,0,0" />
+            <FlexLayout Wrap="Wrap">
+                <Button Text="Connect UR" Clicked="OnUrConnect" Margin="0,0,8,8" BackgroundColor="#1565C0" TextColor="White" Padding="14,8" />
+                <Button Text="robotmode" Clicked="OnUrMode" Margin="0,0,8,8" BackgroundColor="#2A2A2A" TextColor="White" Padding="14,8" />
+                <Button Text="play" Clicked="OnUrPlay" Margin="0,0,8,8" BackgroundColor="#2E7D32" TextColor="White" Padding="14,8" />
+                <Button Text="stop" Clicked="OnUrStop" Margin="0,0,8,8" BackgroundColor="#C62828" TextColor="White" Padding="14,8" />
+            </FlexLayout>
+
+            <Label Text="Профили" TextColor="#888888" FontSize="11" />
+            <CollectionView x:Name="ProfilesList" HeightRequest="120">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Label Text="{Binding Summary}" TextColor="#CCCCCC" FontSize="12" Padding="4" />
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Label x:Name="StatusLabel" Text="" TextColor="#777777" FontSize="12" LineBreakMode="WordWrap" />
+
+            <Border Stroke="#333333" Padding="12" BackgroundColor="#1A1A1A" Margin="0,8,0,0">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="8" />
+                </Border.StrokeShape>
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Как это работает на заводе" FontAttributes="Bold" TextColor="White" FontSize="13" />
+                    <Label Text="1. Ноутбук/ПК: офлайн-программа в KengaCAD Windows → экспорт."
+                           TextColor="#AAAAAA" FontSize="12" LineBreakMode="WordWrap" />
+                    <Label Text="2. Телефон в той же LAN: вкладка Связь → IP контроллера → Проверить порт."
+                           TextColor="#AAAAAA" FontSize="12" LineBreakMode="WordWrap" />
+                    <Label Text="3. Jog: «↑ FTP» заливает файл на KUKA/ABB/Fanuc. UR — Dashboard play/stop."
+                           TextColor="#AAAAAA" FontSize="12" LineBreakMode="WordWrap" />
+                    <Label Text="4. OPC UA / полный мониторинг I/O — в desktop. Live motion без enable запрещён."
+                           TextColor="#AAAAAA" FontSize="12" LineBreakMode="WordWrap" />
+                </VerticalStackLayout>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

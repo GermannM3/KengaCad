@@ -4,11 +4,23 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:KengaCAD.Mobile"
-    Title="KengaCAD.Mobile">
+    Title="KengaCAD"
+    Shell.FlyoutBehavior="Disabled"
+    Shell.BackgroundColor="#121212"
+    Shell.ForegroundColor="White"
+    Shell.TabBarBackgroundColor="#1A1A1A"
+    Shell.TabBarTitleColor="#FF6600"
+    Shell.TabBarUnselectedColor="#888888">
 
-    <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+    <TabBar>
+        <ShellContent Title="Jog"
+                      Icon="dotnet_bot.png"
+                      ContentTemplate="{DataTemplate local:MainPage}"
+                      Route="jog" />
+        <ShellContent Title="Связь"
+                      Icon="dotnet_bot.png"
+                      ContentTemplate="{DataTemplate local:ConnectionPage}"
+                      Route="link" />
+    </TabBar>
 
 </Shell>

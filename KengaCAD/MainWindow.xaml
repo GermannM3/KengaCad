@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:KengaCAD"
         mc:Ignorable="d"
-        Title="KengaCAD Professional v2.2.1" 
+        Title="KengaCAD Professional v2.3.0" 
         Height="900" Width="1400"
         Background="{StaticResource PrimaryDarkBackground}"
         WindowState="Maximized"

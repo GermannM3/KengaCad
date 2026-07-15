@@ -10,13 +10,16 @@ public partial class MainPage : ContentPage
     private double[] _jMin = Enumerable.Repeat(-180.0, 6).ToArray();
     private double[] _jMax = Enumerable.Repeat(180.0, 6).ToArray();
     private readonly ObservableCollection<WaypointRow> _waypoints = new();
-    private readonly Slider[] _sliders;
+    private readonly Slider[] _sliders = null!;
+    private readonly Label[] _jointLabels = null!;
     private bool _updating;
+    private string? _lastExportPath;
 
     public MainPage()
     {
         InitializeComponent();
-        _sliders = new[] { J1, J2, J3, J4, J5, J6 };
+        _sliders = [J1, J2, J3, J4, J5, J6];
+        _jointLabels = [J1Val, J2Val, J3Val, J4Val, J5Val, J6Val];
         WaypointsList.ItemsSource = _waypoints;
         Loaded += async (_, _) => await InitAsync();
     }
@@ -27,7 +30,7 @@ public partial class MainPage : ContentPage
         RobotPicker.ItemsSource = RobotLibrary.Robots.Select(r => r.DisplayName).ToList();
         if (RobotPicker.ItemsSource is IList<string> list && list.Count > 0)
             RobotPicker.SelectedIndex = 0;
-        StatusLabel.Text = "Готово";
+        StatusLabel.Text = "Готово · вкладка «Связь» — IP робота в цехе";
     }
 
     private void OnRobotChanged(object? sender, EventArgs e)
@@ -46,6 +49,7 @@ public partial class MainPage : ContentPage
             _sliders[i].Maximum = _jMax[i];
             _sliders[i].Value = 0;
             _joints[i] = 0;
+            _jointLabels[i].Text = "0.0";
         }
         _updating = false;
         UpdateTcp();
@@ -55,14 +59,19 @@ public partial class MainPage : ContentPage
     {
         if (_updating) return;
         for (int i = 0; i < 6; i++)
+        {
             _joints[i] = _sliders[i].Value;
+            _jointLabels[i].Text = $"{_joints[i]:F1}";
+        }
         UpdateTcp();
     }
 
     private void UpdateTcp()
     {
         var fk = RobotKinematics.FkFull(_joints, _dh);
-        TcpLabel.Text = $"TCP  X={fk.TcpPos.X:F1}  Y={fk.TcpPos.Y:F1}  Z={fk.TcpPos.Z:F1}  |  Rx={fk.TcpRpyDeg.Rx:F1} Ry={fk.TcpRpyDeg.Ry:F1} Rz={fk.TcpRpyDeg.Rz:F1}";
+        TcpLabel.Text =
+            $"TCP  X={fk.TcpPos.X:F1} Y={fk.TcpPos.Y:F1} Z={fk.TcpPos.Z:F1}   " +
+            $"Rx={fk.TcpRpyDeg.Rx:F1} Ry={fk.TcpRpyDeg.Ry:F1} Rz={fk.TcpRpyDeg.Rz:F1}";
     }
 
     private void OnZeroJoints(object? sender, EventArgs e)
@@ -72,6 +81,7 @@ public partial class MainPage : ContentPage
         {
             _joints[i] = 0;
             _sliders[i].Value = 0;
+            _jointLabels[i].Text = "0.0";
         }
         _updating = false;
         UpdateTcp();
@@ -94,12 +104,41 @@ public partial class MainPage : ContentPage
         StatusLabel.Text = $"Добавлена P{idx:000}";
     }
 
+    private void OnClearWaypoints(object? sender, EventArgs e)
+    {
+        _waypoints.Clear();
+        StatusLabel.Text = "Точки очищены";
+    }
+
     private async void OnExportKrl(object? sender, EventArgs e) =>
-        await ExportAsync("krl", (pts, path) => Postprocessors.ExportKukaKrl(pts, path));
+        await ExportAsync("src", (pts, path) => Postprocessors.ExportKukaKrl(pts, path));
     private async void OnExportRapid(object? sender, EventArgs e) =>
         await ExportAsync("mod", (pts, path) => Postprocessors.ExportAbbRapid(pts, path));
     private async void OnExportGcode(object? sender, EventArgs e) =>
         await ExportAsync("gcode", (pts, path) => Postprocessors.ExportGCode(pts, path));
+
+    private async void OnUploadFtp(object? sender, EventArgs e)
+    {
+        if (string.IsNullOrEmpty(_lastExportPath) || !File.Exists(_lastExportPath))
+        {
+            await DisplayAlert("FTP", "Сначала экспортируйте программу (KRL / RAPID / G-code).", "OK");
+            return;
+        }
+
+        var profiles = RobotLinkStore.Load(ConnectionPage.StorePath);
+        var profile = profiles.FirstOrDefault(p => p.Protocol == RobotLinkProtocol.FtpUpload)
+                      ?? profiles.FirstOrDefault();
+        if (profile == null)
+        {
+            await DisplayAlert("FTP", "Создайте профиль на вкладке «Связь» (IP, FTP, логин).", "OK");
+            return;
+        }
+
+        StatusLabel.Text = $"Загрузка на {profile.Host}…";
+        var (ok, msg) = await FtpProgramUploader.UploadAsync(profile, _lastExportPath);
+        StatusLabel.Text = msg;
+        await DisplayAlert(ok ? "Загружено" : "Ошибка FTP", msg, "OK");
+    }
 
     private async Task ExportAsync(string ext, Func<IReadOnlyList<TrajectoryPoint>, string, bool> exporter)
     {
@@ -115,12 +154,13 @@ public partial class MainPage : ContentPage
             StatusLabel.Text = "Ошибка экспорта";
             return;
         }
+        _lastExportPath = path;
         await Share.Default.RequestAsync(new ShareFileRequest
         {
             Title = "KengaCAD экспорт",
             File = new ShareFile(path)
         });
-        StatusLabel.Text = $"Экспорт: {path}";
+        StatusLabel.Text = $"Экспорт готов · можно «↑ FTP» на контроллер";
     }
 
     private sealed class WaypointRow

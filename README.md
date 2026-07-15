@@ -34,7 +34,7 @@ KengaCAD — программа для офлайн-программирован
 | `KengaCAD_Professional_*_macos_portable.tar.gz` | macOS | PyQt-клиент |
 | `KengaCAD_Professional_*_android.apk` | Android | Jog + экспорт, не полный CAD |
 
-Актуальная версия: **v2.2.1**. Новый релиз — тег `v*` → GitHub Actions собирает все артефакты автоматически.
+Актуальная версия: **v2.3.0**. Новый релиз — тег `v*` → GitHub Actions собирает все артефакты автоматически.
 
 ---
 
@@ -73,7 +73,7 @@ KengaCAD — программа для офлайн-программирован
 **Linux:**
 
 ```bash
-tar xzf KengaCAD_Professional_2.2.1_linux-x64_portable.tar.gz
+tar xzf KengaCAD_Professional_2.3.0_linux-x64_portable.tar.gz
 cd распакованная_папка
 chmod +x install.sh run.sh && ./install.sh && ./run.sh
 ```
@@ -81,7 +81,7 @@ chmod +x install.sh run.sh && ./install.sh && ./run.sh
 **macOS:**
 
 ```bash
-tar xzf KengaCAD_Professional_2.2.1_macos_portable.tar.gz
+tar xzf KengaCAD_Professional_2.3.0_macos_portable.tar.gz
 chmod +x install.sh run.sh KengaCAD.command && ./install.sh && ./KengaCAD.command
 ```
 
@@ -89,7 +89,19 @@ chmod +x install.sh run.sh KengaCAD.command && ./install.sh && ./KengaCAD.comman
 
 ## Android
 
-APK в Releases: jog по осям, TCP, точки программы, экспорт через «Поделиться». Полный CAD и 3D — только desktop.
+APK в Releases: jog, TCP, точки, FTP-загрузка на контроллер, UR Dashboard.
+
+### Установка (если система блокирует)
+
+1. Скачай `KengaCAD_Professional_*_android.apk` **с телефона** через браузер (не с ПК на карту без разрешений).
+2. Настройки → Приложения → Специальный доступ → **Установка неизвестных приложений** → разреши для **Chrome / Файлы / Загрузки**.
+3. Google Play Защита → открой Play Store → профиль → Play Защита → **отключи проверку приложений** на время установки (потом можно включить обратно).
+4. APK с v2.3.0 подписан **release-keystore** (не debug). Старые debug-сборки телефоны часто отклоняют молча.
+5. Запасной путь с ПК: `adb install -r KengaCAD_Professional_2.3.0_android.apk`
+
+### Связь с роботом в цехе
+
+Телефон и контроллер в **одной Wi‑Fi/LAN**. Вкладка **Связь**: IP → порт → «Проверить порт» → сохранить профиль. На **Jog**: экспорт → **↑ FTP** (KUKA/ABB/Fanuc) или UR Dashboard play/stop. OPC UA / полный I/O — в Windows-версии.
 
 ---
 

@@ -69,6 +69,8 @@ agent/.env
 # Secrets and local config
 *.pfx
 *.p12
+*.keystore
+*.jks
 installers/secrets/
 **/pki/
 **/credentials.json

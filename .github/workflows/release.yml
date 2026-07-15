@@ -130,18 +130,58 @@ jobs:
         shell: pwsh
         run: .\scripts\sync_mobile_config.ps1
 
+      - name: Decode Android keystore
+        shell: pwsh
+        env:
+          KENGACAD_ANDROID_KEYSTORE_BASE64: ${{ secrets.KENGACAD_ANDROID_KEYSTORE_BASE64 }}
+          KENGACAD_ANDROID_KEYSTORE_PASS: ${{ secrets.KENGACAD_ANDROID_KEYSTORE_PASS }}
+          KENGACAD_ANDROID_KEY_ALIAS: ${{ secrets.KENGACAD_ANDROID_KEY_ALIAS }}
+          KENGACAD_ANDROID_KEY_PASS: ${{ secrets.KENGACAD_ANDROID_KEY_PASS }}
+        run: |
+          if (-not $env:KENGACAD_ANDROID_KEYSTORE_BASE64) {
+            Write-Warning "No Android keystore secret — APK will use debug signing (phones may block install)."
+            return
+          }
+          $ks = Join-Path $env:RUNNER_TEMP "kengacad-android.keystore"
+          [IO.File]::WriteAllBytes($ks, [Convert]::FromBase64String($env:KENGACAD_ANDROID_KEYSTORE_BASE64))
+          echo "ANDROID_KS=$ks" >> $env:GITHUB_ENV
+          $alias = if ($env:KENGACAD_ANDROID_KEY_ALIAS) { $env:KENGACAD_ANDROID_KEY_ALIAS } else { "kengacad" }
+          $kpass = if ($env:KENGACAD_ANDROID_KEY_PASS) { $env:KENGACAD_ANDROID_KEY_PASS } else { $env:KENGACAD_ANDROID_KEYSTORE_PASS }
+          echo "ANDROID_ALIAS=$alias" >> $env:GITHUB_ENV
+          echo "ANDROID_STORE_PASS=$($env:KENGACAD_ANDROID_KEYSTORE_PASS)" >> $env:GITHUB_ENV
+          echo "ANDROID_KEY_PASS=$kpass" >> $env:GITHUB_ENV
+
       - name: Build APK
         shell: pwsh
         run: |
           $ver = "${{ github.ref_name }}".TrimStart('v')
+          $extra = @()
+          if ($env:ANDROID_KS) {
+            $extra += "-p:AndroidKeyStore=true"
+            $extra += "-p:AndroidSigningKeyStore=$($env:ANDROID_KS)"
+            $extra += "-p:AndroidSigningKeyAlias=$($env:ANDROID_ALIAS)"
+            $extra += "-p:AndroidSigningStorePass=$($env:ANDROID_STORE_PASS)"
+            $extra += "-p:AndroidSigningKeyPass=$($env:ANDROID_KEY_PASS)"
+            Write-Host "Signing APK with release keystore"
+          }
           dotnet publish KengaCAD.Mobile/KengaCAD.Mobile.csproj `
             -f net9.0-android -c Release `
             -p:AndroidPackageFormat=apk `
             -p:ApplicationDisplayVersion=$ver `
+            @extra `
             --nologo
           New-Item -ItemType Directory -Force -Path installers/Output | Out-Null
-          $apk = Get-ChildItem -Recurse KengaCAD.Mobile/bin/Release/net9.0-android -Filter *.apk | Select-Object -First 1
+          # Prefer -Signed.apk when present
+          $apk = Get-ChildItem -Recurse KengaCAD.Mobile/bin/Release/net9.0-android -Filter *-Signed.apk -ErrorAction SilentlyContinue |
+            Select-Object -First 1
+          if (-not $apk) {
+            $apk = Get-ChildItem -Recurse KengaCAD.Mobile/bin/Release/net9.0-android -Filter *.apk |
+              Where-Object { $_.Name -notmatch 'android-all' } |
+              Sort-Object Length -Descending |
+              Select-Object -First 1
+          }
           if (-not $apk) { throw "APK not found" }
+          Write-Host "Using $($apk.FullName) ($([math]::Round($apk.Length/1MB,1)) MB)"
           Copy-Item $apk.FullName "installers/Output/KengaCAD_Professional_${ver}_android.apk"
 
       - uses: actions/upload-artifact@v4

@@ -2,57 +2,81 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="KengaCAD.Mobile.MainPage"
-             Title="KengaCAD"
-             BackgroundColor="#1E1E1E">
+             Title="Jog"
+             BackgroundColor="#121212">
 
     <ScrollView>
-        <VerticalStackLayout Padding="16" Spacing="12">
+        <VerticalStackLayout Padding="16" Spacing="10">
 
-            <Label Text="KengaCAD Mobile" FontSize="22" TextColor="White" />
-            <Label Text="Jog, точки программы, экспорт KRL/RAPID" FontSize="13" TextColor="#AAAAAA" />
+            <Border Stroke="#333333" StrokeThickness="1" Padding="12" BackgroundColor="#1A1A1A">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="8" />
+                </Border.StrokeShape>
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="KengaCAD Mobile" FontSize="20" FontAttributes="Bold" TextColor="White" />
+                    <Label Text="Jog · точки · экспорт · связь с контроллером" FontSize="12" TextColor="#999999" />
+                    <Picker x:Name="RobotPicker" Title="Модель робота" TextColor="White" TitleColor="#888888" SelectedIndexChanged="OnRobotChanged" />
+                    <Label x:Name="TcpLabel" Text="TCP: —" TextColor="#FF8800" FontSize="13" FontFamily="OpenSansSemibold" LineBreakMode="WordWrap" />
+                </VerticalStackLayout>
+            </Border>
 
-            <Label Text="Робот" TextColor="#CCCCCC" />
-            <Picker x:Name="RobotPicker" Title="Выберите робота" TextColor="White" SelectedIndexChanged="OnRobotChanged" />
+            <Label Text="ОСИ (град)" TextColor="#888888" FontSize="11" Margin="0,4,0,0" />
 
-            <Label x:Name="TcpLabel" Text="TCP: —" TextColor="#00FF88" FontFamily="Consolas" />
-
-            <Label Text="Оси (градусы)" TextColor="#CCCCCC" Margin="0,8,0,0" />
-            <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="6">
-                <Label Grid.Row="0" Grid.Column="0" Text="J1" TextColor="White" VerticalOptions="Center" />
+            <Grid ColumnDefinitions="36,*,52" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="4">
+                <Label Grid.Row="0" Grid.Column="0" Text="J1" TextColor="#CCCCCC" VerticalOptions="Center" />
                 <Slider Grid.Row="0" Grid.Column="1" x:Name="J1" Minimum="-180" Maximum="180" ValueChanged="OnJointChanged" />
-                <Label Grid.Row="1" Grid.Column="0" Text="J2" TextColor="White" VerticalOptions="Center" />
+                <Label Grid.Row="0" Grid.Column="2" x:Name="J1Val" Text="0.0" TextColor="#FF8800" HorizontalTextAlignment="End" VerticalOptions="Center" FontSize="12" />
+
+                <Label Grid.Row="1" Grid.Column="0" Text="J2" TextColor="#CCCCCC" VerticalOptions="Center" />
                 <Slider Grid.Row="1" Grid.Column="1" x:Name="J2" Minimum="-180" Maximum="180" ValueChanged="OnJointChanged" />
-                <Label Grid.Row="2" Grid.Column="0" Text="J3" TextColor="White" VerticalOptions="Center" />
+                <Label Grid.Row="1" Grid.Column="2" x:Name="J2Val" Text="0.0" TextColor="#FF8800" HorizontalTextAlignment="End" VerticalOptions="Center" FontSize="12" />
+
+                <Label Grid.Row="2" Grid.Column="0" Text="J3" TextColor="#CCCCCC" VerticalOptions="Center" />
                 <Slider Grid.Row="2" Grid.Column="1" x:Name="J3" Minimum="-180" Maximum="180" ValueChanged="OnJointChanged" />
-                <Label Grid.Row="3" Grid.Column="0" Text="J4" TextColor="White" VerticalOptions="Center" />
+                <Label Grid.Row="2" Grid.Column="2" x:Name="J3Val" Text="0.0" TextColor="#FF8800" HorizontalTextAlignment="End" VerticalOptions="Center" FontSize="12" />
+
+                <Label Grid.Row="3" Grid.Column="0" Text="J4" TextColor="#CCCCCC" VerticalOptions="Center" />
                 <Slider Grid.Row="3" Grid.Column="1" x:Name="J4" Minimum="-180" Maximum="180" ValueChanged="OnJointChanged" />
-                <Label Grid.Row="4" Grid.Column="0" Text="J5" TextColor="White" VerticalOptions="Center" />
+                <Label Grid.Row="3" Grid.Column="2" x:Name="J4Val" Text="0.0" TextColor="#FF8800" HorizontalTextAlignment="End" VerticalOptions="Center" FontSize="12" />
+
+                <Label Grid.Row="4" Grid.Column="0" Text="J5" TextColor="#CCCCCC" VerticalOptions="Center" />
                 <Slider Grid.Row="4" Grid.Column="1" x:Name="J5" Minimum="-180" Maximum="180" ValueChanged="OnJointChanged" />
-                <Label Grid.Row="5" Grid.Column="0" Text="J6" TextColor="White" VerticalOptions="Center" />
+                <Label Grid.Row="4" Grid.Column="2" x:Name="J5Val" Text="0.0" TextColor="#FF8800" HorizontalTextAlignment="End" VerticalOptions="Center" FontSize="12" />
+
+                <Label Grid.Row="5" Grid.Column="0" Text="J6" TextColor="#CCCCCC" VerticalOptions="Center" />
                 <Slider Grid.Row="5" Grid.Column="1" x:Name="J6" Minimum="-180" Maximum="180" ValueChanged="OnJointChanged" />
+                <Label Grid.Row="5" Grid.Column="2" x:Name="J6Val" Text="0.0" TextColor="#FF8800" HorizontalTextAlignment="End" VerticalOptions="Center" FontSize="12" />
             </Grid>
 
-            <HorizontalStackLayout Spacing="8">
-                <Button Text="Сброс осей" Clicked="OnZeroJoints" />
-                <Button Text="+ Точка TCP" Clicked="OnAddWaypoint" />
-            </HorizontalStackLayout>
+            <FlexLayout Wrap="Wrap" JustifyContent="Start" AlignItems="Start">
+                <Button Text="Сброс" Clicked="OnZeroJoints" Margin="0,0,8,8" BackgroundColor="#2A2A2A" TextColor="White" Padding="14,8" />
+                <Button Text="+ TCP" Clicked="OnAddWaypoint" Margin="0,0,8,8" BackgroundColor="#FF6600" TextColor="White" Padding="14,8" />
+                <Button Text="Очистить" Clicked="OnClearWaypoints" Margin="0,0,8,8" BackgroundColor="#2A2A2A" TextColor="White" Padding="14,8" />
+            </FlexLayout>
 
-            <Label Text="Точки программы" TextColor="#CCCCCC" />
-            <CollectionView x:Name="WaypointsList" HeightRequest="160">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Label Text="{Binding Display}" TextColor="#DDDDDD" FontSize="13" Padding="4" />
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
+            <Label Text="ПРОГРАММА" TextColor="#888888" FontSize="11" />
+            <Border Stroke="#333333" Padding="4" BackgroundColor="#1A1A1A" HeightRequest="140">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="6" />
+                </Border.StrokeShape>
+                <CollectionView x:Name="WaypointsList">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Label Text="{Binding Display}" TextColor="#DDDDDD" FontSize="12" Padding="8,4" FontFamily="OpenSansRegular" />
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Border>
 
-            <HorizontalStackLayout Spacing="8">
-                <Button Text="KRL" Clicked="OnExportKrl" />
-                <Button Text="RAPID" Clicked="OnExportRapid" />
-                <Button Text="G-code" Clicked="OnExportGcode" />
-            </HorizontalStackLayout>
+            <Label Text="ЭКСПОРТ / НА КОНТРОЛЛЕР" TextColor="#888888" FontSize="11" />
+            <FlexLayout Wrap="Wrap">
+                <Button Text="KRL" Clicked="OnExportKrl" Margin="0,0,8,8" BackgroundColor="#2A2A2A" TextColor="White" Padding="14,8" />
+                <Button Text="RAPID" Clicked="OnExportRapid" Margin="0,0,8,8" BackgroundColor="#2A2A2A" TextColor="White" Padding="14,8" />
+                <Button Text="G-code" Clicked="OnExportGcode" Margin="0,0,8,8" BackgroundColor="#2A2A2A" TextColor="White" Padding="14,8" />
+                <Button Text="↑ FTP" Clicked="OnUploadFtp" Margin="0,0,8,8" BackgroundColor="#1565C0" TextColor="White" Padding="14,8" />
+            </FlexLayout>
 
-            <Label x:Name="StatusLabel" Text="" TextColor="#888888" FontSize="12" />
+            <Label x:Name="StatusLabel" Text="" TextColor="#777777" FontSize="12" LineBreakMode="WordWrap" />
 
         </VerticalStackLayout>
     </ScrollView>
