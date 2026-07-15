@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:KengaCAD"
         mc:Ignorable="d"
-        Title="KengaCAD Professional v2.3.0" 
+        Title="KengaCAD Professional v2.3.1" 
         Height="900" Width="1400"
         Background="{StaticResource PrimaryDarkBackground}"
         WindowState="Maximized"
@@ -421,20 +421,83 @@
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Border Grid.Row="0" Background="#2B2F35" Padding="10,8">
                         <TextBlock Text="Проект / Subprograms" FontWeight="SemiBold"/>
                     </Border>
                     <ListBox x:Name="ProjectTreeList" Grid.Row="1" Margin="6"
                              Background="#1B1D22" Foreground="#E6E6E6" BorderBrush="#454A52"/>
-                    <Border Grid.Row="2" Background="#252A31" BorderBrush="#3B414A" BorderThickness="0,1,0,0" Padding="6" MaxHeight="200">
+
+                    <!-- Цех: ноутбук → робот по LAN (как на автозаводе) -->
+                    <Border Grid.Row="2" Background="#1E2A22" BorderBrush="#3B5240" BorderThickness="0,1,0,0" Padding="6">
+                        <StackPanel>
+                            <TextBlock Text="Цех — связь с роботом" FontWeight="SemiBold" FontSize="11" Margin="0,0,0,4"/>
+                            <TextBlock Text="Ноутбук и контроллер в одной сети. IP робота → Проверить → Экспорт → Залить."
+                                       FontSize="9" Foreground="#8A9099" TextWrapping="Wrap" Margin="0,0,0,6"/>
+                            <ComboBox x:Name="ShopBrandCombo" Margin="0,0,0,4" FontSize="10"
+                                      Background="#161A1F" Foreground="#E6E6E6" BorderBrush="#3B414A"
+                                      SelectionChanged="ShopBrandCombo_SelectionChanged">
+                                <ComboBoxItem Content="KUKA" IsSelected="True"/>
+                                <ComboBoxItem Content="ABB"/>
+                                <ComboBoxItem Content="Fanuc"/>
+                                <ComboBoxItem Content="Yaskawa"/>
+                                <ComboBoxItem Content="UR"/>
+                            </ComboBox>
+                            <Grid Margin="0,0,0,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="56"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="ShopHostTextBox" Grid.Column="0" Margin="0,0,4,0"
+                                         Text="192.168.1.10" FontSize="10" Padding="4,2"
+                                         Background="#161A1F" Foreground="#E6E6E6" BorderBrush="#3B414A"
+                                         ToolTip="IP контроллера робота в цеховой сети"/>
+                                <TextBox x:Name="ShopPortTextBox" Grid.Column="1"
+                                         Text="21" FontSize="10" Padding="4,2"
+                                         Background="#161A1F" Foreground="#E6E6E6" BorderBrush="#3B414A"
+                                         ToolTip="Порт: 21=FTP, 29999=UR Dashboard"/>
+                            </Grid>
+                            <Grid Margin="0,0,0,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="ShopUserTextBox" Grid.Column="0" Margin="0,0,4,0"
+                                         Text="anonymous" FontSize="10" Padding="4,2"
+                                         Background="#161A1F" Foreground="#E6E6E6" BorderBrush="#3B414A"
+                                         ToolTip="Логин FTP"/>
+                                <TextBox x:Name="ShopPassTextBox" Grid.Column="1"
+                                         Text="" FontSize="10" Padding="4,2"
+                                         Background="#161A1F" Foreground="#E6E6E6" BorderBrush="#3B414A"
+                                         ToolTip="Пароль FTP"/>
+                            </Grid>
+                            <TextBox x:Name="ShopRemoteDirTextBox" Margin="0,0,0,4"
+                                     Text="/" FontSize="10" Padding="4,2"
+                                     Background="#161A1F" Foreground="#E6E6E6" BorderBrush="#3B414A"
+                                     ToolTip="Каталог на контроллере (KUKA: /R1/Program …)"/>
+                            <WrapPanel>
+                                <Button Content="Проверить" Padding="8,3" Margin="0,0,4,4" FontSize="10"
+                                        Click="ShopProbe_Click" ToolTip="Проверить IP:порт в LAN"/>
+                                <Button Content="Экспорт+" Padding="8,3" Margin="0,0,4,4" FontSize="10"
+                                        Click="ShopExportProgram_Click" ToolTip="Экспорт программы с Move и впрысками (IO)"/>
+                                <Button Content="Залить FTP" Padding="8,3" Margin="0,0,4,4" FontSize="10"
+                                        Background="#2E7D32" Foreground="White"
+                                        Click="ShopUploadFtp_Click" ToolTip="Загрузить последний экспорт на контроллер по FTP"/>
+                            </WrapPanel>
+                            <TextBlock x:Name="ShopStatusText" FontSize="9" Foreground="#8A9099"
+                                       Text="Статус: не проверено" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Row="3" Background="#252A31" BorderBrush="#3B414A" BorderThickness="0,1,0,0" Padding="6" MaxHeight="180">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
-                            <TextBlock Text="Сигналы I/O" FontWeight="SemiBold" FontSize="11" Margin="0,0,0,4"/>
+                            <TextBlock Text="Сигналы I/O (PLC / пушка)" FontWeight="SemiBold" FontSize="11" Margin="0,0,0,4"/>
                             <Grid Grid.Row="1" Margin="0,0,0,4">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -445,7 +508,7 @@
                                          Text="opc.tcp://localhost:4840" FontSize="10" Padding="4,2"
                                          Background="#161A1F" Foreground="#E6E6E6" BorderBrush="#3B414A"/>
                                 <Button Grid.Column="1" Content="OPC" Padding="6,2" Margin="0,0,4,0" FontSize="10"
-                                        Click="OpcConnect_Click" ToolTip="Подключить OPC UA"/>
+                                        Click="OpcConnect_Click" ToolTip="Подключить OPC UA (PLC ячейки)"/>
                                 <Button Grid.Column="2" Content="X" Padding="6,2" FontSize="10"
                                         Click="OpcDisconnect_Click" ToolTip="Отключить OPC UA"/>
                             </Grid>
@@ -464,7 +527,7 @@
                             </DataGrid>
                         </Grid>
                     </Border>
-                    <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="6">
+                    <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="6">
                         <Button Content="Новый" Padding="10,4" Margin="0,0,6,0"
                                 Command="{x:Static ApplicationCommands.New}"/>
                         <Button Content="Открыть" Padding="10,4" Margin="0,0,6,0"
@@ -739,6 +802,10 @@
                                         <Button Content="+MoveJ" Click="AddMoveJOperationButton_Click" Padding="8,3" Margin="0,0,6,0"/>
                                         <Button Content="+Wait" Click="AddWaitOperationButton_Click" Padding="8,3" Margin="0,0,6,0"/>
                                         <Button Content="+IO" Click="AddIoOperationButton_Click" Padding="8,3" Margin="0,0,6,0"/>
+                                        <Button Content="Впрыск ВКЛ" Click="AddSprayOnButton_Click" Padding="8,3" Margin="0,0,6,0"
+                                                Background="#1565C0" Foreground="White" ToolTip="DO3=1 — пушка герметика / впрыск"/>
+                                        <Button Content="Впрыск ВЫКЛ" Click="AddSprayOffButton_Click" Padding="8,3" Margin="0,0,6,0"
+                                                ToolTip="DO3=0 — остановить впрыск"/>
                                         <Button Content="Up" Click="MoveOperationUpButton_Click" Padding="8,3" Margin="0,0,6,0"/>
                                         <Button Content="Dn" Click="MoveOperationDownButton_Click" Padding="8,3" Margin="0,0,6,0"/>
                                         <Button Content="Del" Click="DeleteOperationButton_Click" Padding="8,3"/>

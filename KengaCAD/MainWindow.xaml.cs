@@ -110,6 +110,7 @@ namespace KengaCAD
         private const int MaxRobotsInCell = 4;
         private readonly OpcUaClient _opcUaClient = new();
         private DispatcherTimer? _opcPollTimer;
+        private string? _lastExportPath;
 
         /// <summary>2D: Y вниз (Skia). 3D: Z вверх, для робота инвертируем Y оси CAD.</summary>
         private static Point3D CadToScene3D(double cadX, double cadY, double z = 0)
@@ -304,9 +305,11 @@ namespace KengaCAD
         private void InitializeIoSignals()
         {
             _ioSignals.Clear();
+            // Типичная автоячейка (сварка / герметик / захват) — номера DO сверяются на шкафу
             _ioSignals.Add(new IoSignal { Name = "DO1", Type = "DO", Description = "Захват: открыть", OpcNodeId = "ns=2;s=DO1" });
             _ioSignals.Add(new IoSignal { Name = "DO2", Type = "DO", Description = "Захват: закрыть", OpcNodeId = "ns=2;s=DO2" });
-            _ioSignals.Add(new IoSignal { Name = "DO3", Type = "DO", Description = "Старт сварки", OpcNodeId = "ns=2;s=DO3" });
+            _ioSignals.Add(new IoSignal { Name = "DO3", Type = "DO", Description = "Впрыск / пушка герметика", OpcNodeId = "ns=2;s=DO3" });
+            _ioSignals.Add(new IoSignal { Name = "DO4", Type = "DO", Description = "Сварка / ток", OpcNodeId = "ns=2;s=DO4" });
             _ioSignals.Add(new IoSignal { Name = "DI1", Type = "DI", Description = "Деталь на месте", OpcNodeId = "ns=2;s=DI1" });
             _ioSignals.Add(new IoSignal { Name = "DI2", Type = "DI", Description = "Безопасность OK", OpcNodeId = "ns=2;s=DI2" });
             IoSignalsGrid.ItemsSource = _ioSignals;
@@ -842,6 +845,31 @@ namespace KengaCAD
         private void AddIoOperationButton_Click(object sender, RoutedEventArgs e)
             => AddOperation("IO");
 
+        private void AddSprayOnButton_Click(object sender, RoutedEventArgs e)
+            => AddIoNamed("DO3", true, "Впрыск ВКЛ");
+
+        private void AddSprayOffButton_Click(object sender, RoutedEventArgs e)
+            => AddIoNamed("DO3", false, "Впрыск ВЫКЛ");
+
+        private void AddIoNamed(string channel, bool value, string label)
+        {
+            int wpIndex = _selectedWaypointIndex >= 0 ? _selectedWaypointIndex + 1 : Math.Max(1, _programWaypoints.Count);
+            _programOperations.Add(new ProgramOperation
+            {
+                Index = _programOperations.Count + 1,
+                Type = "IO",
+                WaypointIndex = wpIndex,
+                IoChannel = channel,
+                IoValue = value,
+                WaitMs = 0
+            });
+            RefreshOperationsGrid();
+            _selectedOperationIndex = _programOperations.Count - 1;
+            OperationsGrid.SelectedIndex = _selectedOperationIndex;
+            UpdateCycleTimeDisplay();
+            AppendOutput($"{label} → {channel}={(value ? 1 : 0)} (попадает в экспорт на робота)");
+        }
+
         private void AddOperation(string type)
         {
             int wpIndex = _selectedWaypointIndex >= 0 ? _selectedWaypointIndex + 1 : Math.Max(1, _programWaypoints.Count);
@@ -1306,44 +1334,151 @@ namespace KengaCAD
             UpdateJogTelemetry();
         }
 
-        private void ExportGCode_Executed(object sender, RoutedEventArgs e)
-        {
-            var pts = GetActiveTrajectory();
-            if (pts.Count == 0) { StatusText.Text = "Нет траектории. Добавьте точки или полилинию."; return; }
-            var dlg = new SaveFileDialog { Filter = "G-code (*.gcode)|*.gcode|All (*.*)|*.*", FileName = "trajectory.gcode" };
-            if (dlg.ShowDialog() != true) return;
-            StatusText.Text = Postprocessors.ExportGCode(pts, dlg.FileName) ? "Экспорт G-code: " + dlg.FileName : "Ошибка экспорта.";
-            AppendOutput(StatusText.Text);
-        }
-
         private void ExportKRL_Executed(object sender, RoutedEventArgs e)
-        {
-            var pts = GetActiveTrajectory();
-            if (pts.Count == 0) { StatusText.Text = "Нет траектории. Добавьте точки или полилинию."; return; }
-            var dlg = new SaveFileDialog { Filter = "KUKA KRL (*.krl)|*.krl|All (*.*)|*.*", FileName = "trajectory.krl" };
-            if (dlg.ShowDialog() != true) return;
-            StatusText.Text = Postprocessors.ExportKukaKrl(pts, dlg.FileName) ? "Экспорт KUKA KRL: " + dlg.FileName : "Ошибка экспорта.";
-            AppendOutput(StatusText.Text);
-        }
+            => ExportShopBrand("kuka", "KUKA KRL (*.src;*.krl)|*.src;*.krl|All (*.*)|*.*", "KengaCAD_Cell.src");
 
         private void ExportRAPID_Executed(object sender, RoutedEventArgs e)
+            => ExportShopBrand("abb", "ABB RAPID (*.mod)|*.mod|All (*.*)|*.*", "KengaCAD_Cell.mod");
+
+        private void ExportTP_Executed(object sender, RoutedEventArgs e)
+            => ExportShopBrand("fanuc", "Fanuc TP (*.ls)|*.ls|All (*.*)|*.*", "KengaCAD_Cell.ls");
+
+        private void ExportUR_Executed(object sender, RoutedEventArgs e)
+            => ExportShopBrand("ur", "UR Script (*.script;*.urp)|*.script;*.urp|All (*.*)|*.*", "KengaCAD_Cell.script");
+
+        private void ExportShopBrand(string brand, string filter, string defaultName)
         {
-            var pts = GetActiveTrajectory();
-            if (pts.Count == 0) { StatusText.Text = "Нет траектории. Добавьте точки или полилинию."; return; }
-            var dlg = new SaveFileDialog { Filter = "ABB RAPID (*.mod)|*.mod|All (*.*)|*.*", FileName = "trajectory.mod" };
+            if (_programWaypoints.Count == 0 && GetActiveTrajectory().Count == 0)
+            {
+                StatusText.Text = "Нет точек. Добавьте TCP-точки программы или нарисуйте траекторию.";
+                return;
+            }
+
+            EnsureMoveOpsFromWaypoints();
+            var dlg = new SaveFileDialog { Filter = filter, FileName = defaultName };
             if (dlg.ShowDialog() != true) return;
-            StatusText.Text = Postprocessors.ExportAbbRapid(pts, dlg.FileName) ? "Экспорт ABB RAPID: " + dlg.FileName : "Ошибка экспорта.";
+
+            bool ok;
+            if (_programWaypoints.Count > 0)
+                ok = ProgramExporter.Export(brand, _programWaypoints.ToList(), _programOperations.ToList(), dlg.FileName);
+            else
+            {
+                var pts = GetActiveTrajectory();
+                ok = brand switch
+                {
+                    "abb" => Postprocessors.ExportAbbRapid(pts, dlg.FileName),
+                    "fanuc" => Postprocessors.ExportFanucTp(pts, dlg.FileName),
+                    "ur" => Postprocessors.ExportUrScript(pts, dlg.FileName),
+                    _ => Postprocessors.ExportKukaKrl(pts, dlg.FileName)
+                };
+            }
+
+            if (ok)
+            {
+                _lastExportPath = dlg.FileName;
+                StatusText.Text = $"Экспорт ({brand}): {dlg.FileName} — можно «Залить FTP»";
+            }
+            else StatusText.Text = "Ошибка экспорта.";
             AppendOutput(StatusText.Text);
         }
 
-        private void ExportTP_Executed(object sender, RoutedEventArgs e)
+        private void EnsureMoveOpsFromWaypoints()
         {
-            var pts = GetActiveTrajectory();
-            if (pts.Count == 0) { StatusText.Text = "Нет траектории. Добавьте точки или полилинию."; return; }
-            var dlg = new SaveFileDialog { Filter = "Fanuc TP (*.ls)|*.ls|All (*.*)|*.*", FileName = "trajectory.ls" };
-            if (dlg.ShowDialog() != true) return;
-            StatusText.Text = Postprocessors.ExportFanucTp(pts, dlg.FileName) ? "Экспорт Fanuc TP: " + dlg.FileName : "Ошибка экспорта.";
-            AppendOutput(StatusText.Text);
+            if (_programWaypoints.Count == 0) return;
+            if (_programOperations.Count > 0) return;
+            foreach (var wp in _programWaypoints)
+            {
+                _programOperations.Add(new ProgramOperation
+                {
+                    Index = _programOperations.Count + 1,
+                    Type = "MoveL",
+                    WaypointIndex = wp.Index,
+                    Speed = wp.Speed > 0 ? wp.Speed : 120,
+                    Accel = wp.Accel > 0 ? wp.Accel : 300
+                });
+            }
+            RefreshOperationsGrid();
+        }
+
+        private RobotLinkProfile BuildShopProfile()
+        {
+            _ = int.TryParse(ShopPortTextBox.Text, out var port);
+            var brand = (ShopBrandCombo.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "KUKA";
+            return new RobotLinkProfile
+            {
+                Name = brand,
+                Brand = brand,
+                Host = ShopHostTextBox.Text?.Trim() ?? "",
+                Port = port > 0 ? port : 21,
+                Protocol = brand.Equals("UR", StringComparison.OrdinalIgnoreCase)
+                    ? RobotLinkProtocol.UrDashboard
+                    : RobotLinkProtocol.FtpUpload,
+                Username = ShopUserTextBox.Text ?? "anonymous",
+                Password = ShopPassTextBox.Text ?? "",
+                RemoteDirectory = string.IsNullOrWhiteSpace(ShopRemoteDirTextBox.Text) ? "/" : ShopRemoteDirTextBox.Text.Trim()
+            };
+        }
+
+        private void ShopBrandCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ShopPortTextBox == null) return;
+            var brand = (ShopBrandCombo.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "KUKA";
+            ShopPortTextBox.Text = brand.Equals("UR", StringComparison.OrdinalIgnoreCase) ? "29999" : "21";
+            if (ShopRemoteDirTextBox != null)
+            {
+                ShopRemoteDirTextBox.Text = brand switch
+                {
+                    "KUKA" => "/R1/Program",
+                    "ABB" => "/",
+                    "Fanuc" => "/",
+                    _ => "/"
+                };
+            }
+        }
+
+        private async void ShopProbe_Click(object sender, RoutedEventArgs e)
+        {
+            var p = BuildShopProfile();
+            ShopStatusText.Text = $"Проверка {p.Host}:{p.Port}…";
+            var (ok, msg) = await RobotLinkProbe.ProbeAsync(p.Host, p.Port);
+            ShopStatusText.Text = msg;
+            AppendOutput(ok ? $"Цех OK: {msg}" : $"Цех нет связи: {msg}");
+            StatusText.Text = ShopStatusText.Text;
+        }
+
+        private void ShopExportProgram_Click(object sender, RoutedEventArgs e)
+        {
+            var brand = (ShopBrandCombo.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "KUKA";
+            switch (brand)
+            {
+                case "ABB": ExportShopBrand("abb", "ABB RAPID (*.mod)|*.mod|All (*.*)|*.*", "KengaCAD_Cell.mod"); break;
+                case "Fanuc": ExportShopBrand("fanuc", "Fanuc TP (*.ls)|*.ls|All (*.*)|*.*", "KengaCAD_Cell.ls"); break;
+                case "UR": ExportShopBrand("ur", "UR Script (*.script)|*.script|All (*.*)|*.*", "KengaCAD_Cell.script"); break;
+                default: ExportShopBrand("kuka", "KUKA KRL (*.src;*.krl)|*.src;*.krl|All (*.*)|*.*", "KengaCAD_Cell.src"); break;
+            }
+        }
+
+        private async void ShopUploadFtp_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(_lastExportPath) || !System.IO.File.Exists(_lastExportPath))
+            {
+                MessageBox.Show("Сначала нажмите «Экспорт+» (или экспорт KRL/RAPID/TP) — нужен файл программы.",
+                    "Цех", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+            var p = BuildShopProfile();
+            if (string.IsNullOrWhiteSpace(p.Host))
+            {
+                MessageBox.Show("Укажите IP контроллера.", "Цех", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            ShopStatusText.Text = $"FTP → {p.Host}…";
+            var (ok, msg) = await FtpProgramUploader.UploadAsync(p, _lastExportPath);
+            ShopStatusText.Text = msg;
+            AppendOutput(msg);
+            StatusText.Text = msg;
+            MessageBox.Show(msg, ok ? "Залито на робота" : "Ошибка FTP", MessageBoxButton.OK,
+                ok ? MessageBoxImage.Information : MessageBoxImage.Warning);
         }
 
         private void ExportYaskawa_Executed(object sender, RoutedEventArgs e)
@@ -1352,19 +1487,31 @@ namespace KengaCAD
             if (pts.Count == 0) { StatusText.Text = "Нет траектории. Добавьте точки или полилинию."; return; }
             var dlg = new SaveFileDialog { Filter = "Yaskawa INFORM (*.jbi)|*.jbi|All (*.*)|*.*", FileName = "trajectory.jbi" };
             if (dlg.ShowDialog() != true) return;
-            StatusText.Text = Postprocessors.ExportYaskawaInform(pts, dlg.FileName) ? "Экспорт Yaskawa INFORM: " + dlg.FileName : "Ошибка экспорта.";
+            if (Postprocessors.ExportYaskawaInform(pts, dlg.FileName))
+            {
+                _lastExportPath = dlg.FileName;
+                StatusText.Text = "Экспорт Yaskawa INFORM: " + dlg.FileName;
+            }
+            else StatusText.Text = "Ошибка экспорта.";
             AppendOutput(StatusText.Text);
         }
 
-        private void ExportUR_Executed(object sender, RoutedEventArgs e)
+        private void ExportGCode_Executed(object sender, RoutedEventArgs e)
         {
             var pts = GetActiveTrajectory();
             if (pts.Count == 0) { StatusText.Text = "Нет траектории. Добавьте точки или полилинию."; return; }
-            var dlg = new SaveFileDialog { Filter = "UR Script (*.urp)|*.urp|All (*.*)|*.*", FileName = "trajectory.urp" };
+            var dlg = new SaveFileDialog { Filter = "G-code (*.gcode)|*.gcode|All (*.*)|*.*", FileName = "trajectory.gcode" };
             if (dlg.ShowDialog() != true) return;
-            StatusText.Text = Postprocessors.ExportUrScript(pts, dlg.FileName) ? "Экспорт UR Script: " + dlg.FileName : "Ошибка экспорта.";
+            if (Postprocessors.ExportGCode(pts, dlg.FileName))
+            {
+                _lastExportPath = dlg.FileName;
+                StatusText.Text = "Экспорт G-code: " + dlg.FileName;
+            }
+            else StatusText.Text = "Ошибка экспорта.";
             AppendOutput(StatusText.Text);
         }
+
+        // old point-only exports replaced above for KRL/RAPID/TP/UR
 
         private void DeleteCommand_Executed(object sender, ExecutedRoutedEventArgs e)
         {
